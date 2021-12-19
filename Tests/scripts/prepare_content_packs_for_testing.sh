@@ -73,6 +73,7 @@ else
   REMOVE_PBS=true
   BUCKET_UPLOAD_FLOW=true
   GCS_PRIVATE_BUCKET="marketplace-dist-private"
+  PACKS_TO_UPLOAD="All"
   if [ -n "${FORCE_PACK_UPLOAD}" ] && [ -n "${PACKS_TO_UPLOAD}" ]; then
     # In case the workflow is force upload, we override the forced packs
     echo "Force uploading to production the following packs: ${PACKS_TO_UPLOAD}"
