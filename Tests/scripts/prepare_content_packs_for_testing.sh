@@ -52,7 +52,6 @@ fi
 echo "Copying master files at: gs://$GCS_MARKET_BUCKET/$SOURCE_PATH to target path: gs://$BUILD_BUCKET_CONTENT_DIR_FULL_PATH ..."
 gsutil -m cp -r "gs://$GCS_MARKET_BUCKET/$SOURCE_PATH" "gs://$BUILD_BUCKET_CONTENT_DIR_FULL_PATH" > "$ARTIFACTS_FOLDER/logs/Prepare Content Packs For Testing gsutil.log" 2>&1
 echo "Finished copying successfully."
-
 if [ ! -n "${BUCKET_UPLOAD}" ]; then
     echo "Updating modified content packs in the bucket ..."
     CONTENT_PACKS_TO_INSTALL_FILE="$ARTIFACTS_FOLDER/content_packs_to_install.txt"
@@ -63,6 +62,7 @@ if [ ! -n "${BUCKET_UPLOAD}" ]; then
     if [[ -z "$CONTENT_PACKS_TO_INSTALL" ]]; then
       echo "Did not get content packs to update in the bucket."
     else
+      CONTENT_PACKS_TO_INSTALL="All"
       echo "Updating the following content packs: $CONTENT_PACKS_TO_INSTALL ..."
       python3 ./Tests/Marketplace/upload_packs.py -a $PACK_ARTIFACTS -d $ARTIFACTS_FOLDER/packs_dependencies.json -e $EXTRACT_FOLDER -b $GCS_BUILD_BUCKET -s "$GCS_MARKET_KEY" -n $CI_PIPELINE_ID -p $CONTENT_PACKS_TO_INSTALL -o true -sb $BUILD_BUCKET_PACKS_DIR_PATH -k $PACK_SIGNING_KEY -rt false -bu false -c $CI_COMMIT_BRANCH -f false
       echo "Finished updating content packs successfully."
