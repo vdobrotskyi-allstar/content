@@ -16,7 +16,6 @@ https://github.com/demisto/content/blob/master/Packs/HelloWorld/Integrations/Hel
 
 import demistomock as demisto
 from CommonServerPython import *  # noqa # pylint: disable=unused-wildcard-import
-from CommonServerUserPython import *  # noqa
 import requests
 import traceback
 from typing import Dict, Any
@@ -74,12 +73,11 @@ def test_module(client: Client) -> str:
 
 def crowdstrike_get_environments_command(client: Client):
     environments = client.get_environments()
+    demisto.info(environments)
     return CommandResults(
         outputs_prefix='CrowdStrike.Environment',
         outputs_key_field='id',
-        readable_output='False',
         outputs=environments,
-        raw_response=environments
     )
 
 
@@ -97,9 +95,6 @@ def main() -> None:
     :rtype:
     """
 
-    # get the service API url
-    base_url = urljoin(demisto.params()['url'], '/api/v2')
-    api_key = 'dummykey'
     # if your Client class inherits from BaseClient, SSL verification is
     # handled out of the box by it, just pass ``verify_certificate`` to
     # the Client constructor
@@ -115,12 +110,12 @@ def main() -> None:
         # TODO: Make sure you add the proper headers for authentication
         # (i.e. "Authorization": {api key})
         headers: Dict = {
-            'api-key': api_key,
+            'api-key':  demisto.params().get('credentials', {}).get('password'),
             'User-Agent': 'Falcon Sandbox'
         }
 
         client = Client(
-            base_url=base_url,
+            base_url=demisto.params()['serverUrl'],
             verify=verify_certificate,
             headers=headers,
             proxy=proxy)
@@ -130,7 +125,7 @@ def main() -> None:
             result = test_module(client)
             return_results(result)
 
-        elif demisto.command() in ('crowdstrike-get-environments', 'cs-falcon-sandbox-get-environments'):
+        elif demisto.command() in ('crowdstrike-get-environments', 'cs-falcon-sandbox-get-environments-j'):
             return_results(crowdstrike_get_environments_command(client))
 
     # Log exceptions and return errors
@@ -141,5 +136,5 @@ def main() -> None:
 
 ''' ENTRY POINT '''
 
-if __name__ in ('__main__', '__builtin__', 'builtins'):
-    main()
+# if __name__ in ('__main__', '__builtin__', 'builtins'):
+main()
