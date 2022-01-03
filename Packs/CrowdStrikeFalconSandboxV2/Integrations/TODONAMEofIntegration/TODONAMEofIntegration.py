@@ -77,9 +77,8 @@ def crowdstrike_get_environments_command(client: Client):
     return CommandResults(
         outputs_prefix='CrowdStrike.Environment',
         outputs_key_field='id',
-        outputs=environments,
+        readable_output=tableToMarkdown('All Environments:', environments,['id','description'],headerTransform= lambda x : {'id':'_ID','description' : 'Description'}[x])
     )
-
 
 
 # TODO: ADD additional command functions that translate XSOAR inputs/outputs to Client
@@ -110,7 +109,7 @@ def main() -> None:
         # TODO: Make sure you add the proper headers for authentication
         # (i.e. "Authorization": {api key})
         headers: Dict = {
-            'api-key':  demisto.params().get('credentials', {}).get('password'),
+            'api-key': demisto.params().get('credentials', {}).get('password'),
             'User-Agent': 'Falcon Sandbox'
         }
 
@@ -125,7 +124,7 @@ def main() -> None:
             result = test_module(client)
             return_results(result)
 
-        elif demisto.command() in ('crowdstrike-get-environments', 'cs-falcon-sandbox-get-environments-j'):
+        elif demisto.command() in ('crowdstrike-get-environments', 'cs-falcon-sandbox-get-environments'):
             return_results(crowdstrike_get_environments_command(client))
 
     # Log exceptions and return errors

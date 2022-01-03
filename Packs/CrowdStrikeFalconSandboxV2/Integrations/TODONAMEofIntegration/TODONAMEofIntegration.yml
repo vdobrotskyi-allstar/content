@@ -168,7 +168,7 @@ script:
     description: Get summary information for a given MD5, SHA1 or SHA256 and all the
       reports generated for any environment ID
   - name: cs-falcon-sandbox-get-environments
-    deprecated: true
+    deprecated: false
     arguments: []
     outputs:
     - contextPath: VX.Environment.ID
@@ -187,6 +187,7 @@ script:
       description: Icon of environment
     description: Get a list of all available environments
   - name: crowdstrike-get-environments
+    deprecated: true
     arguments: []
     outputs:
     - contextPath: CrowdStrike.Environment.ID
