@@ -23,11 +23,11 @@ from typing import Dict, Any
 # Disable insecure warnings
 requests.packages.urllib3.disable_warnings()  # pylint: disable=no-member
 
-''' CONSTANTS '''
-
 DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'  # ISO8601 format with UTC, default in XSOAR
+QUERY_ARGS = ('file_name', 'file_type', 'file_type_desc', 'env_id', 'country', 'verdict', 'av_detect', 'vx_family',
+              'tag', 'date_from', 'date_to', 'port', 'host', 'domain', 'url', 'similiar_to', 'context', 'imp_hash',
+              'ssdeep', 'authentihash')
 
-''' CLIENT CLASS '''
 
 
 class Client(BaseClient):
@@ -40,18 +40,7 @@ class Client(BaseClient):
 
 
 def to_image_result(image):
-    # file_result = fileResult()
-
     return fileResult(image['name'], base64.b64decode(image['image']), entryTypes['entryInfoFile'])
-
-    # return {
-    #     'Type': entryTypes['note'],
-    #     'ContentsFormat': formats['json'],
-    #     # 'File': stored_img['File'],
-    #     # 'FileID': stored_img['FileID'],
-    #     'Contents': '',
-    #     'HumanReadable': '![](data:image/png;base64,' + image['image'] + ')'
-    # }
 
 
 def get_key(args):
@@ -113,16 +102,11 @@ def crowdstrike_get_environments_command(client: Client):
 
 def crowdstrike_get_screenshots_command(client: Client, args: Dict[str, Any]):
     key = get_key(args)
-
-    result = client.get_screenshots(key)
-    return [to_image_result(image) for image in result]
-    # fileResult()
+    return [to_image_result(image) for image in client.get_screenshots(key)]
 
 
-# TODO: ADD additional command functions that translate XSOAR inputs/outputs to Client
-
-
-''' MAIN FUNCTION '''
+def crowdstrike_result_command():
+    pass
 
 
 def main() -> None:
@@ -167,8 +151,8 @@ def main() -> None:
             return_results(crowdstrike_get_environments_command(client))
         elif demisto.command() in ('cs-falcon-sandbox-get-screenshots', 'crowdstrike-get-screenshots'):
             demisto.results(crowdstrike_get_screenshots_command(client, args))
-        # elif demisto.command() in ('cs-falcon-sandbox-result','crowdstrike-result')
-        #     crowdstrike
+        elif demisto.command() in ('cs-falcon-sandbox-result', 'crowdstrike-result'):
+            crowdstrike_result_command()
 
     # Log exceptions and return errors
     except Exception as e:
