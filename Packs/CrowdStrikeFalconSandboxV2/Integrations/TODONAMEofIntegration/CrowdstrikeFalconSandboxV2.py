@@ -35,6 +35,33 @@ class Client(BaseClient):
     def get_environments(self):
         return self._http_request(method='GET', url_suffix='/system/environments')
 
+    def get_screenshots(self, key):
+        return self._http_request(method='GET', url_suffix=f"/report/{key}/screenshots")
+
+
+def to_image_result(image):
+    # file_result = fileResult()
+
+    return fileResult(image['name'], base64.b64decode(image['image']), entryTypes['entryInfoFile'])
+
+    # return {
+    #     'Type': entryTypes['note'],
+    #     'ContentsFormat': formats['json'],
+    #     # 'File': stored_img['File'],
+    #     # 'FileID': stored_img['FileID'],
+    #     'Contents': '',
+    #     'HumanReadable': '![](data:image/png;base64,' + image['image'] + ')'
+    # }
+
+
+def get_key(args):
+    if args['file'] and args['environmentID']:
+        return f"{args['file']}:{args['environmentID']}"
+    elif args['jobID']:
+        return args['jobID']
+    else:
+        raise ValueError('Must supply job_id or environment_id and file')
+
 
 ''' HELPER FUNCTIONS '''
 
@@ -77,8 +104,19 @@ def crowdstrike_get_environments_command(client: Client):
     return CommandResults(
         outputs_prefix='CrowdStrike.Environment',
         outputs_key_field='id',
-        readable_output=tableToMarkdown('All Environments:', environments,['id','description'],headerTransform= lambda x : {'id':'_ID','description' : 'Description'}[x])
+        outputs=environments,
+        readable_output=tableToMarkdown('All Environments:', environments, ['id', 'description'],
+                                        headerTransform=lambda x: {'id': '_ID', 'description': 'Description'}[x]),
+        raw_response=environments
     )
+
+
+def crowdstrike_get_screenshots_command(client: Client, args: Dict[str, Any]):
+    key = get_key(args)
+
+    result = client.get_screenshots(key)
+    return [to_image_result(image) for image in result]
+    # fileResult()
 
 
 # TODO: ADD additional command functions that translate XSOAR inputs/outputs to Client
@@ -93,15 +131,16 @@ def main() -> None:
     :return:
     :rtype:
     """
-
+    params: Dict[str, Any] = demisto.params()
+    args: Dict[str, Any] = demisto.args()
     # if your Client class inherits from BaseClient, SSL verification is
     # handled out of the box by it, just pass ``verify_certificate`` to
     # the Client constructor
-    verify_certificate = not demisto.params().get('insecure', False)
+    verify_certificate = not params.get('insecure', False)
 
     # if your Client class inherits from BaseClient, system proxy is handled
     # out of the box by it, just pass ``proxy`` to the Client constructor
-    proxy = demisto.params().get('proxy', False)
+    proxy = params.get('proxy', False)
 
     demisto.debug(f'Command being called is {demisto.command()}')
     try:
@@ -126,6 +165,10 @@ def main() -> None:
 
         elif demisto.command() in ('crowdstrike-get-environments', 'cs-falcon-sandbox-get-environments'):
             return_results(crowdstrike_get_environments_command(client))
+        elif demisto.command() in ('cs-falcon-sandbox-get-screenshots', 'crowdstrike-get-screenshots'):
+            demisto.results(crowdstrike_get_screenshots_command(client, args))
+        # elif demisto.command() in ('cs-falcon-sandbox-result','crowdstrike-result')
+        #     crowdstrike
 
     # Log exceptions and return errors
     except Exception as e:

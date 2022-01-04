@@ -1,7 +1,7 @@
 commonfields:
-  id: VxStream2
+  id: CrowdStrike Falcon Sandbox V2
   version: -1
-name: VxStream2
+name: CrowdStrike Falcon Sandbox V2
 display: CrowdStrike Falcon Sandbox V2
 category: Forensics & Malware Analysis
 description: Fully automated malware analysis (formerly Payload Security VxStream).
@@ -171,20 +171,27 @@ script:
     deprecated: false
     arguments: []
     outputs:
-    - contextPath: VX.Environment.ID
-      description: Environment id
-    - contextPath: VX.Environment.description
+    - contextPath: CrowdStrike.Environment.ID
+      description: Environment ID
+      type: number
+    - contextPath: CrowdStrike.Environment.description
       description: Environment description
-    - contextPath: VX.Environment.architecture
+      type: string
+    - contextPath: CrowdStrike.Environment.architecture
       description: Environment architecture
-    - contextPath: VX.Environment.VMs_total
+      type: string
+    - contextPath: CrowdStrike.Environment.VMs_total
       description: Total virtual machines in environment
-    - contextPath: VX.Environment.VMs_busy
+      type: number
+    - contextPath: CrowdStrike.Environment.VMs_busy
       description: Busy virtual machines in environment
-    - contextPath: VX.Environment.analysisMode
-      description: Analysis mode of environment
-    - contextPath: VX.Environment.groupicon
+      type: number
+    - contextPath: CrowdStrike.Environment.analysisMode
+      description: 'Analysis mode of environment '
+      type: string
+    - contextPath: CrowdStrike.Environment.groupicon
       description: Icon of environment
+      type: string
     description: Get a list of all available environments
   - name: crowdstrike-get-environments
     deprecated: true

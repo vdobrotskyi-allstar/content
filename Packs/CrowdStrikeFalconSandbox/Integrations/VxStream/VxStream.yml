@@ -173,25 +173,6 @@ script:
       type: string
     description: Get summary information for a given MD5, SHA1 or SHA256 and all the
       reports generated for any environment ID
-  - name: vx-get-environments
-    deprecated: true
-    arguments: []
-    outputs:
-    - contextPath: VX.Environment.ID
-      description: Environment id
-    - contextPath: VX.Environment.description
-      description: Environment description
-    - contextPath: VX.Environment.architecture
-      description: Environment architecture
-    - contextPath: VX.Environment.VMs_total
-      description: Total virtual machines in environment
-    - contextPath: VX.Environment.VMs_busy
-      description: Busy virtual machines in environment
-    - contextPath: VX.Environment.analysisMode
-      description: Analysis mode of environment
-    - contextPath: VX.Environment.groupicon
-      description: Icon of environment
-    description: Get a list of all available environments
   - name: crowdstrike-get-environments
     arguments: []
     outputs:
