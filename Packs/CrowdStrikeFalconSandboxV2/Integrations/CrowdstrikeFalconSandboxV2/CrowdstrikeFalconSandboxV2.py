@@ -24,10 +24,9 @@ from typing import Dict, Any
 requests.packages.urllib3.disable_warnings()  # pylint: disable=no-member
 
 DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'  # ISO8601 format with UTC, default in XSOAR
-QUERY_ARGS = ('file_name', 'file_type', 'file_type_desc', 'env_id', 'country', 'verdict', 'av_detect', 'vx_family',
-              'tag', 'date_from', 'date_to', 'port', 'host', 'domain', 'url', 'similiar_to', 'context', 'imp_hash',
-              'ssdeep', 'authentihash')
-
+SEARCH_TERM_QUERY_ARGS = ('file_name', 'file_type', 'file_type_desc', 'env_id', 'country', 'verdict', 'av_detect',
+                          'vx_family', 'tag', 'date_from', 'date_to', 'port', 'host', 'domain', 'url', 'similiar_to',
+                          'context', 'imp_hash', 'ssdeep', 'authentihash')
 
 
 class Client(BaseClient):
@@ -37,6 +36,46 @@ class Client(BaseClient):
 
     def get_screenshots(self, key):
         return self._http_request(method='GET', url_suffix=f"/report/{key}/screenshots")
+
+    def search(self, query_args: Dict[str, Any]):
+        pass
+
+
+def translate_verdict(param: str):
+    if param.isnumeric():  # TODO does this come in as a string?
+        return param
+    return {
+        'Whitelisted': 1,
+        'NoVerdict': 2,
+        'NoSpecificThreat': 3,
+        'Suspicious': 4,
+        'Malicious': 4
+    }[param]
+
+
+def split_query_to_term_args(query: str) -> Dict[str, Any]:
+    pass
+
+
+def validated_term(pair):
+    if pair[0] == 'verdict':
+        return translate_verdict(pair[1])
+    if pair[0] == 'country' and len(pair[1]) != 3:
+        raise ValueError('Country ISO code should be 3 characters long')
+    return pair[1]
+
+
+def validated_search_terms(query_args: Dict[str, Any]) -> Dict[str, Any]:
+    if len(query_args) == 0:
+        raise ValueError('Must have at least one search term')
+    return {pair[0]: validated_term(pair) for pair in query_args}
+
+
+def get_search_term_args(args) -> Dict[str, Any]:
+    if args['query']:
+        return split_query_to_term_args(args['query'])
+    else:
+        return {term: args[term] for term in SEARCH_TERM_QUERY_ARGS if args[term]}
 
 
 def to_image_result(image):
@@ -50,13 +89,6 @@ def get_key(args):
         return args['jobID']
     else:
         raise ValueError('Must supply job_id or environment_id and file')
-
-
-''' HELPER FUNCTIONS '''
-
-# TODO: ADD HERE ANY HELPER FUNCTION YOU MIGHT NEED (if any)
-
-''' COMMAND FUNCTIONS '''
 
 
 def test_module(client: Client) -> str:
@@ -109,6 +141,13 @@ def crowdstrike_result_command():
     pass
 
 
+def crowdstrike_search_command(client: Client, args):
+    query_args: Dict = get_search_term_args(args)
+    query_args = validated_search_terms(query_args)
+
+    return client.search(query_args)
+
+
 def main() -> None:
     """main function, parses params and runs command functions
 
@@ -128,9 +167,6 @@ def main() -> None:
 
     demisto.debug(f'Command being called is {demisto.command()}')
     try:
-
-        # TODO: Make sure you add the proper headers for authentication
-        # (i.e. "Authorization": {api key})
         headers: Dict = {
             'api-key': demisto.params().get('credentials', {}).get('password'),
             'User-Agent': 'Falcon Sandbox'
@@ -153,6 +189,8 @@ def main() -> None:
             demisto.results(crowdstrike_get_screenshots_command(client, args))
         elif demisto.command() in ('cs-falcon-sandbox-result', 'crowdstrike-result'):
             crowdstrike_result_command()
+        elif demisto.command() in ('cs-falcon-sandbox-search', 'crowdstrike-search'):
+            crowdstrike_search_command(client, args)
 
     # Log exceptions and return errors
     except Exception as e:
@@ -162,5 +200,5 @@ def main() -> None:
 
 ''' ENTRY POINT '''
 
-# if __name__ in ('__main__', '__builtin__', 'builtins'):
+# if __name__ in ('__main__', '__builtin__', 'builtins'): TODO return line
 main()
