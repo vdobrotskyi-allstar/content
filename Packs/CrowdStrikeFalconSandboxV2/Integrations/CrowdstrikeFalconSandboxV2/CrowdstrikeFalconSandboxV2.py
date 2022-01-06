@@ -54,6 +54,9 @@ class Client(BaseClient):
     def analysis_overview_refresh(self, sha256hash):
         self._http_request(method='GET', url_suffix=f'/overview/{sha256hash}/refresh', ok_codes=[202])
 
+    def get_report(self, key, filetype):
+        return self._http_request(method='GET', url_suffix=f'/report/{key}/report/{filetype}', resp_type='all', ok_codes=(200, 404))
+
 
 def map_object(obj: Any, maprules: Dict[str, str], only_given_fields=False):
     # class InlineClass(object):
@@ -67,8 +70,6 @@ def map_object(obj: Any, maprules: Dict[str, str], only_given_fields=False):
 
 
 def translate_verdict(param: str):
-    if param.isnumeric():  # TODO does this come in as a string?
-        return param
     return {
         'Whitelisted': 1,
         'NoVerdict': 2,
@@ -119,7 +120,7 @@ def get_api_id(args):
     elif args.get('jobID'):
         return args['jobID']
     else:
-        raise ValueError('Must supply job_id or environment_id and file')
+        raise ValueError('Must supply jobID or environmentID and file')
 
 
 def test_module(client: Client) -> str:
@@ -150,7 +151,7 @@ def test_module(client: Client) -> str:
     return message
 
 
-def crowdstrike_get_environments_command(client: Client):
+def crowdstrike_get_environments_command(client: Client, _):
     environments = client.get_environments()
     demisto.info(environments)
     return CommandResults(
@@ -168,8 +169,40 @@ def crowdstrike_get_screenshots_command(client: Client, args: Dict[str, Any]):
     return [to_image_result(image) for image in client.get_screenshots(key)]
 
 
-def crowdstrike_result_command():
-    pass
+def poll(name, interval,timeout):
+    """Using this, the first argument is a bool whether or not the method has finished, the second argument is the
+    finished result, or the result we want to be shown in case polling is False"""
+
+    def dec(func):
+        def inner(client, args):
+            if args.get('Polling'):
+                demisto.debug(f'polling is true. cmd name: {name} interval {interval}')
+                demisto.results('polling true')#TODO Remove
+                ScheduledCommand.raise_error_if_not_supported()
+                continue_poll, result = func(client, args)
+                if not continue_poll:
+                    return result
+                return ScheduledCommand(command=name, next_run_in_seconds=interval, args=args, timeout_in_seconds=timeout)
+            else:
+                demisto.debug('Polling is false')
+                return func(client, args)[1]
+
+        return inner
+
+    return dec
+
+
+@poll('cs-falcon-sandbox-result',11, 60)
+def crowdstrike_result_command(client: Client, args) -> (bool, CommandResults):
+    key = get_api_id(args)
+    report = client.get_report(key, args['file-type'])
+    demisto.results('status ' + str(report.status_code)) #todo remove
+    poll_again = report.status_code != 200
+    if not poll_again:
+        demisto.results(fileResult('filename.txt', report.content,file_type=entryTypes['entryInfoFile']))
+        if args.get('file'):
+            return crowdstrike_scan_command(client, args)
+    return poll_again, CommandResults(raw_response=report, readable_output='hello world')
 
 
 def crowdstrike_search_command(client: Client, args):
@@ -226,7 +259,7 @@ def crowdstrike_analysis_overview_summary_command(client: Client, args):
         outputs_key_field='sha256',
         outputs=result,
         raw_response=result,
-        readable_output=tableToMarkdown('Analysis Overview Summary', result, removeNull=True)
+        readable_output=tableToMarkdown('Analysis Overview Summary:', result, removeNull=True)
 
     )
 
@@ -278,29 +311,13 @@ def main() -> None:
             crowdstrike_analysis_overview_summary_command: ['cs-falcon-sandbox-analysis-overview-summary'],
             crowdstrike_analysis_overview_refresh: ['cs-falcon-sandbox-analysis-overview-refresh']
         }
+        demisto.results('call')#todo remove
         commands_dict = {}
         for command in backwards_dictionary:
             for command_text in backwards_dictionary[command]:
                 commands_dict[command_text] = command
         return_results(commands_dict[demisto.command()](client, args))
 
-        # elif demisto.command() in ('cs-falcon-sandbox-search', 'crowdstrike-search'):
-        #     return_results(crowdstrike_search_command(client, args))  # TODO ret
-        # elif demisto.command() in ('cs-falcon-sandbox-scan', 'crowdstrike-scan', 'file'):
-        #     crowdstrike_scan_command(client, args)  # TODO ret:
-        # elif demisto.command() in ('crowdstrike-get-environments', 'cs-falcon-sandbox-get-environments'):
-        #     return_results(crowdstrike_get_environments_command(client))
-        # elif demisto.command() in ('cs-falcon-sandbox-get-screenshots', 'crowdstrike-get-screenshots'):
-        #     demisto.results(crowdstrike_get_screenshots_command(client, args))
-        # elif demisto.command() in ('cs-falcon-sandbox-result', 'crowdstrike-result'):
-        #     return_results(crowdstrike_result_command())
-        # elif demisto.command() == 'cs-falcon-sandbox-analysis-overview':
-        #     return_results(crowdstrike_analysis_overview_command(client, args))
-        # elif demisto.command() == 'cs-falcon-sandbox-analysis-overview-summary':
-        #     return_results(crowdstrike_analysis_overview_summary_command(client, args))
-        # elif demisto.command() == 'cs-falcon-sandbox-analysis-overview-refresh':
-        #     return_results(crowdstrike_analysis_overview_refresh(client,args))
-    # Log exceptions and return errors
     except Exception as e:
         demisto.error(traceback.format_exc())  # print the traceback
         return_error(f'Failed to execute {demisto.command()} command.\nError:\n{str(e)}')

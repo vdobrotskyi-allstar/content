@@ -296,11 +296,12 @@ script:
           type: string
       description: Search the database using the Falcon Sandbox search syntax
     - name: crowdstrike-result
+      polling: true
       arguments:
         - name: file
           default: true
           description: File hash (MD5, SHA1 or SHA256) - Mandatory in v1
-        - name: environmentId
+        - name: environmentID
           description: environment ID to submit file to (get all via
             crowdstrike-get-environments)  - Mandatory in v1.
           defaultValue: "100"
@@ -319,6 +320,13 @@ script:
           defaultValue: pdf
         - name: JobID
           description: Job ID of file to generate report of (supported only in v2)
+        - name: Polling
+          description: wether the command should poll until receiving a result
+          required: false
+          isArray: false
+          defaultValue: "False"
+          predefined:
+            - ""
       outputs:
         - contextPath: DBotScore.Indicator
           description: The indicator we tested
