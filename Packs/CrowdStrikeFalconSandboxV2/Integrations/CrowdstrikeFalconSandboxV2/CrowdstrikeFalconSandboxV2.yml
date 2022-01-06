@@ -558,6 +558,45 @@ script:
           description: Job ID of file analysation
           type: string
       description: Submit a file by URL for analysis (Supported only in v2).
+    - name: cs-falcon-sandbox-analysis-overview
+      description: get overview for hash
+      deprecated: false
+      arguments:
+        - name: file
+          description: The sha256 hash of a file
+          required: true
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+      outputs:
+        - contextPath: CrowdStrike.AnalysisOverview
+          description: description
+          type: Unknown
+    - name: cs-falcon-sandbox-analysis-overview-summary
+      description: return overview for hash
+      deprecated: false
+      arguments:
+        - name: file
+          description: The sha256 hash of a file
+          required: true
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+      outputs: []
+    - name: cs-falcon-sandbox-analysis-overview-refresh
+      description: refresh overview and download fresh data from external services
+      deprecated: false
+      arguments:
+        - name: file
+          description: The sha256 hash of a file
+          required: true
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+      outputs: []
   runonce: false
 tests:
   - VxStream Test

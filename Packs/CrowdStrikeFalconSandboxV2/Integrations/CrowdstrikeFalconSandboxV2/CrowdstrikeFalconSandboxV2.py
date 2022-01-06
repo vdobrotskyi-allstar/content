@@ -45,6 +45,15 @@ class Client(BaseClient):
         self._headers['Content-Type'] = "application/x-www-form-urlencoded"
         return self._http_request(method='POST', url_suffix='/search/hashes', data={'hashes[]': files})
 
+    def analysis_overview(self, sha256hash):
+        return self._http_request(method='GET', url_suffix=f'/overview/{sha256hash}')
+
+    def analysis_overview_summary(self, sha256hash):
+        return self._http_request(method='GET', url_suffix=f'/overview/{sha256hash}/summary')
+
+    def analysis_overview_refresh(self, sha256hash):
+        self._http_request(method='GET', url_suffix=f'/overview/{sha256hash}/refresh', ok_codes=[202])
+
 
 def map_object(obj: Any, maprules: Dict[str, str], only_given_fields=False):
     # class InlineClass(object):
@@ -169,8 +178,9 @@ def crowdstrike_search_command(client: Client, args):
     response = client.search(query_args)
 
     def convert_to_file_res(res):
-        return Common.File(size=res['size'], sha256=res['sha256'], dbot_score=None, extension=res['type_short'],
-                           name=res['submit_name'])
+        return Common.File(size=res['size'], sha256=res['sha256'], dbot_score=get_dbot_score(res['sha256']
+                                                                                             , res['threat_score']),
+                           extension=res['type_short'], name=res['submit_name'])
 
     return CommandResults(
         raw_response=response,
@@ -182,6 +192,48 @@ def crowdstrike_search_command(client: Client, args):
 
 def crowdstrike_scan_command(client: Client, args):
     client.scan(args['file'].split(','))
+
+
+def get_dbot_score(filehash, raw_score: int):
+    def calc_score():
+        return {3: 0,
+                2: 3,
+                1: 2,
+                0: 1}.get(raw_score, 0)
+
+    return Common.DBotScore(indicator=filehash, integration_name='CrowdStrike Falcon Sandbox V2',
+                            indicator_type=DBotScoreType.FILE, score=calc_score())
+
+
+def crowdstrike_analysis_overview_command(client: Client, args):
+    result = client.analysis_overview(args['file'])
+    file = Common.File(sha256=result['sha256'], size=result['size'], file_type=result['type'],
+                       dbot_score=get_dbot_score(args['file'], result['threat_score']))
+    return CommandResults(
+        outputs_prefix='CrowdStrike.AnalysisOverview',
+        outputs_key_field='sha256',
+        outputs=result,
+        raw_response=result,
+        indicator=file
+        # TODO what should be human readable
+    )
+
+
+def crowdstrike_analysis_overview_summary_command(client: Client, args):
+    result = client.analysis_overview_summary(args['file'])
+    return CommandResults(
+        outputs_prefix='CrowdStrike.AnalysisOverviewSummary',
+        outputs_key_field='sha256',
+        outputs=result,
+        raw_response=result,
+        readable_output=tableToMarkdown('Analysis Overview Summary', result, removeNull=True)
+
+    )
+
+
+def crowdstrike_analysis_overview_refresh(client: Client, args):
+    client.analysis_overview_refresh(args['file'])
+    return CommandResults(readable_output='Successful')
 
 
 def main() -> None:
@@ -214,23 +266,40 @@ def main() -> None:
             headers=headers,
             proxy=proxy)
 
-        if demisto.command() == 'test-module':
-            # This is the call made when pressing the integration Test button.
-            result = test_module(client)
-            return_results(result)
+        backwards_dictionary = {
+            test_module: ['test-module'],
+            crowdstrike_search_command: ['cs-falcon-sandbox-search', 'crowdstrike-search'],
+            crowdstrike_scan_command: ['cs-falcon-sandbox-scan', 'crowdstrike-scan', 'file'],
+            crowdstrike_get_environments_command: ['crowdstrike-get-environments',
+                                                   'cs-falcon-sandbox-get-environments'],
+            crowdstrike_get_screenshots_command: ['cs-falcon-sandbox-get-screenshots', 'crowdstrike-get-screenshots'],
+            crowdstrike_result_command: ['cs-falcon-sandbox-result', 'crowdstrike-result'],
+            crowdstrike_analysis_overview_command: ['cs-falcon-sandbox-analysis-overview'],
+            crowdstrike_analysis_overview_summary_command: ['cs-falcon-sandbox-analysis-overview-summary'],
+            crowdstrike_analysis_overview_refresh: ['cs-falcon-sandbox-analysis-overview-refresh']
+        }
+        commands_dict = {}
+        for command in backwards_dictionary:
+            for command_text in backwards_dictionary[command]:
+                commands_dict[command_text] = command
+        return_results(commands_dict[demisto.command()](client, args))
 
-        elif demisto.command() in ('cs-falcon-sandbox-search', 'crowdstrike-search'):
-            return_results(crowdstrike_search_command(client, args))  # TODO ret
-        elif demisto.command() in ('cs-falcon-sandbox-scan', 'crowdstrike-scan', 'file'):
-            crowdstrike_scan_command(client, args)  # TODO ret:
-        elif demisto.command() == 'cs-falcon-sandbox-analysis':
-            pass
-        elif demisto.command() in ('crowdstrike-get-environments', 'cs-falcon-sandbox-get-environments'):
-            return_results(crowdstrike_get_environments_command(client))
-        elif demisto.command() in ('cs-falcon-sandbox-get-screenshots', 'crowdstrike-get-screenshots'):
-            demisto.results(crowdstrike_get_screenshots_command(client, args))
-        elif demisto.command() in ('cs-falcon-sandbox-result', 'crowdstrike-result'):
-            return_results(crowdstrike_result_command())
+        # elif demisto.command() in ('cs-falcon-sandbox-search', 'crowdstrike-search'):
+        #     return_results(crowdstrike_search_command(client, args))  # TODO ret
+        # elif demisto.command() in ('cs-falcon-sandbox-scan', 'crowdstrike-scan', 'file'):
+        #     crowdstrike_scan_command(client, args)  # TODO ret:
+        # elif demisto.command() in ('crowdstrike-get-environments', 'cs-falcon-sandbox-get-environments'):
+        #     return_results(crowdstrike_get_environments_command(client))
+        # elif demisto.command() in ('cs-falcon-sandbox-get-screenshots', 'crowdstrike-get-screenshots'):
+        #     demisto.results(crowdstrike_get_screenshots_command(client, args))
+        # elif demisto.command() in ('cs-falcon-sandbox-result', 'crowdstrike-result'):
+        #     return_results(crowdstrike_result_command())
+        # elif demisto.command() == 'cs-falcon-sandbox-analysis-overview':
+        #     return_results(crowdstrike_analysis_overview_command(client, args))
+        # elif demisto.command() == 'cs-falcon-sandbox-analysis-overview-summary':
+        #     return_results(crowdstrike_analysis_overview_summary_command(client, args))
+        # elif demisto.command() == 'cs-falcon-sandbox-analysis-overview-refresh':
+        #     return_results(crowdstrike_analysis_overview_refresh(client,args))
     # Log exceptions and return errors
     except Exception as e:
         demisto.error(traceback.format_exc())  # print the traceback
