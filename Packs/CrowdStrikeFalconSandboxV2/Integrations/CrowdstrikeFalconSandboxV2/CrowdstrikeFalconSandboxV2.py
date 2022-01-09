@@ -52,10 +52,14 @@ class Client(BaseClient):
         return self._http_request(method='GET', url_suffix=f'/overview/{sha256hash}/summary')
 
     def analysis_overview_refresh(self, sha256hash):
-        self._http_request(method='GET', url_suffix=f'/overview/{sha256hash}/refresh', ok_codes=[202])
+        self._http_request(method='GET', url_suffix=f'/overview/{sha256hash}/refresh')
 
     def get_report(self, key, filetype):
-        return self._http_request(method='GET', url_suffix=f'/report/{key}/report/{filetype}', resp_type='all', ok_codes=(200, 404))
+        return self._http_request(method='GET', url_suffix=f'/report/{key}/report/{filetype}', resp_type='all',
+                                  ok_codes=(200, 404))
+
+    def get_state(self, key):
+        return self._http_request(method='GET', url_suffix=f'/report/{key}/state')
 
 
 def map_object(obj: Any, maprules: Dict[str, str], only_given_fields=False):
@@ -117,10 +121,10 @@ def to_image_result(image):
 def get_api_id(args):
     if args.get('file') and args.get('environmentID'):
         return f"{args['file']}:{args['environmentID']}"
-    elif args.get('jobID'):
-        return args['jobID']
+    elif args.get('JobID'):
+        return args['JobID']
     else:
-        raise ValueError('Must supply jobID or environmentID and file')
+        raise ValueError('Must supply JobID or environmentID and file')
 
 
 def test_module(client: Client) -> str:
@@ -169,22 +173,24 @@ def crowdstrike_get_screenshots_command(client: Client, args: Dict[str, Any]):
     return [to_image_result(image) for image in client.get_screenshots(key)]
 
 
-def poll(name, interval,timeout):
+def poll(name, interval=30, timeout=600):
     """Using this, the first argument is a bool whether or not the method has finished, the second argument is the
     finished result, or the result we want to be shown in case polling is False"""
 
     def dec(func):
         def inner(client, args):
+            demisto.debug('args:' + str(args))
             if args.get('Polling'):
-                demisto.debug(f'polling is true. cmd name: {name} interval {interval}')
-                demisto.results('polling true')#TODO Remove
                 ScheduledCommand.raise_error_if_not_supported()
                 continue_poll, result = func(client, args)
                 if not continue_poll:
                     return result
-                return ScheduledCommand(command=name, next_run_in_seconds=interval, args=args, timeout_in_seconds=timeout)
+                polling_args = args
+                return CommandResults(readable_output='Fetching Results:',
+                                      scheduled_command=ScheduledCommand(command=name, next_run_in_seconds=interval,
+                                                                         args={**polling_args},
+                                                                         timeout_in_seconds=timeout))
             else:
-                demisto.debug('Polling is false')
                 return func(client, args)[1]
 
         return inner
@@ -192,17 +198,32 @@ def poll(name, interval,timeout):
     return dec
 
 
-@poll('cs-falcon-sandbox-result',11, 60)
-def crowdstrike_result_command(client: Client, args) -> (bool, CommandResults):
+@poll('crowdstrike-result', 11, 60)  # todo return not dep method
+def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, CommandResults):
     key = get_api_id(args)
-    report = client.get_report(key, args['file-type'])
-    demisto.results('status ' + str(report.status_code)) #todo remove
-    poll_again = report.status_code != 200
-    if not poll_again:
-        demisto.results(fileResult('filename.txt', report.content,file_type=entryTypes['entryInfoFile']))
+    report_response = client.get_report(key, args['file-type'])
+    demisto.debug(f'get report response code: {report_response.status_code}')
+    successful_response = report_response.status_code == 200
+
+    if successful_response:
+        ret_list = [fileResult('filename.txt', report_response.content, file_type=entryTypes['entryInfoFile'])]
         if args.get('file'):
-            return crowdstrike_scan_command(client, args)
-    return poll_again, CommandResults(raw_response=report, readable_output='hello world')
+            ret_list.append(crowdstrike_scan_command(client, args))
+        return False, ret_list
+
+    else:
+        error_response = CommandResults(raw_response=report_response,
+                                        readable_output="Falcon Sandbox returned an error: status code " +
+                                                        f"{report_response.status_code}, response: {report_response.text}",
+                                        entry_type=entryTypes['error'])
+
+        if args.get('Polling'):  # extra fetch if we dont poll
+            state = client.get_state(key)
+            demisto.results(f'state check: {state}')
+            demisto.debug(f'state to check if should poll response: {state}')
+            return state['state'] != 'ERROR', error_response
+
+        return False, error_response
 
 
 def crowdstrike_search_command(client: Client, args):
@@ -223,8 +244,14 @@ def crowdstrike_search_command(client: Client, args):
     )
 
 
+@poll('cs-falcon-sandbox-scan', 20, 60)
 def crowdstrike_scan_command(client: Client, args):
-    client.scan(args['file'].split(','))
+    scan_response = client.scan(args['file'].split(','))
+    files = [Common.File(size=res['size'], file_type = res['type'], sha1=res['sha1'], sha256=res['sha256'],
+                         sha512=res['sha512'],name=res['submit_name'], ssdeep=res['ssdeep'], dbot_score=get_dbot_score(res['sha256'],res['threat_score'])) for res in scan_response]
+    command_result = CommandResults(outputs_prefix='CrowdStrike.Report', indicators=files,
+                                    raw_response=scan_response, outputs=scan_response)
+    return False, command_result  # TODO check if empty
 
 
 def get_dbot_score(filehash, raw_score: int):
@@ -277,6 +304,7 @@ def main() -> None:
     """
     params: Dict[str, Any] = demisto.params()
     args: Dict[str, Any] = demisto.args()
+
     # if your Client class inherits from BaseClient, SSL verification is
     # handled out of the box by it, just pass ``verify_certificate`` to
     # the Client constructor
@@ -311,7 +339,6 @@ def main() -> None:
             crowdstrike_analysis_overview_summary_command: ['cs-falcon-sandbox-analysis-overview-summary'],
             crowdstrike_analysis_overview_refresh: ['cs-falcon-sandbox-analysis-overview-refresh']
         }
-        demisto.results('call')#todo remove
         commands_dict = {}
         for command in backwards_dictionary:
             for command_text in backwards_dictionary[command]:

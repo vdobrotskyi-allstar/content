@@ -199,6 +199,102 @@ script:
           description: Sample environment ID
           type: number
       description: Submit a file from investigation to analysis server
+    - name: cs-falcon-sandbox-result
+      arguments:
+        - name: query
+          default: true
+          description: Falcon Sandbox query syntax, e.g. url:google,host:95.181.53.78.
+            This argument integrates all other arguments to one, and cannot be
+            given along with the other arguments.
+        - name: filename
+          description: Filename e.g. invoice.exe
+        - name: filetype
+          description: Filetype e.g. docx
+        - name: filetype_desc
+          description: Filetype description e.g. PE32 executable
+        - name: env_id
+          description: Environment Id
+        - name: country
+          description: Country (3 digit ISO) e.g. swe, usa, fra
+        - name: verdict
+          auto: PREDEFINED
+          predefined:
+            - Whitelisted
+            - NoVerdict
+            - NoSpecificThreat
+            - Suspicious
+            - Malicious
+          description: "Verdict "
+        - name: av_detect
+          description: AV Multiscan range e.g. 50-70 (min 0, max 100)
+        - name: vx_family
+          description: AV Family Substring e.g. nemucod
+        - name: tag
+          description: Hashtag e.g. ransomware
+        - name: port
+          description: Port e.g. 8080
+        - name: host
+          description: Host e.g. 192.168.0.1
+        - name: domain
+          description: Domain e.g. checkip.dyndns.org
+        - name: url
+          description: HTTP Request Substring e.g. google
+        - name: similar_to
+          description: Similar Samples e.g. <sha256>
+        - name: context
+          description: Sample Context e.g. <sha256>
+        - name: imp_hash
+          description: Import Hash
+        - name: ssdeep
+          description: SSDeep
+        - name: authentihash
+          description: Authentication Hash
+      outputs:
+        - contextPath: File.SHA256
+          description: SHA256 of search result
+          type: string
+        - contextPath: File.SHA1
+          description: SHA1of search result
+          type: string
+        - contextPath: File.MD5
+          description: MD5 of search result
+          type: string
+        - contextPath: File.environmentId
+          description: Environment Id of search result
+          type: number
+        - contextPath: File.start_time
+          description: Start time of search result
+        - contextPath: File.threatscore
+          description: Threat score of search result by server
+          type: string
+        - contextPath: File.verdict
+          description: Verdict of search result
+          type: string
+        - contextPath: File.environmentDescription
+          description: Environment description of search result
+          type: string
+        - contextPath: File.submitname
+          description: Submission name of search result
+          type: string
+        - contextPath: File.vxfamily
+          description: Family of search result
+          type: string
+        - contextPath: File.threatscore
+          description: Threat score of search result
+          type: number
+        - contextPath: File.type_short
+          description: type of search result (url, host, etc.)
+          type: string
+        - contextPath: File.size
+          description: Size of search result
+          type: number
+        - contextPath: File.Malicious.Vendor
+          description: or malicious files, the vendor that made the decision
+          type: string
+        - contextPath: File.Malicious.Description
+          description: For malicious files, the reason for the vendor to make the decision
+          type: string
+      description: Search the database using the Falcon Sandbox search syntax
     - name: crowdstrike-search
       arguments:
         - name: query
@@ -321,12 +417,11 @@ script:
         - name: JobID
           description: Job ID of file to generate report of (supported only in v2)
         - name: Polling
-          description: wether the command should poll until receiving a result
+          description: whether the command should poll until receiving a result
           required: false
           isArray: false
-          defaultValue: "False"
+          type: boolean
           predefined:
-            - ""
       outputs:
         - contextPath: DBotScore.Indicator
           description: The indicator we tested
