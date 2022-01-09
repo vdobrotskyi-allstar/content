@@ -27,6 +27,11 @@ DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'  # ISO8601 format with UTC, default in XSOAR
 SEARCH_TERM_QUERY_ARGS = ('filename', 'filetype', 'filetype_desc', 'env_id', 'country', 'verdict', 'av_detect',
                           'vx_family', 'tag', 'date_from', 'date_to', 'port', 'host', 'domain', 'url', 'similiar_to',
                           'context', 'imp_hash', 'ssdeep', 'authentihash')
+SUBMISSION_PARAMETERS = ('environment_id', 'no_share_third_party', 'allow_community_access','no_hash_lookup',
+                         'action_script', 'hybrid_analysis', 'experimental_anti_evasion', 'script_logging',
+                         'input_sample_tampering', 'network_settings', 'email', 'comment', 'custom_cmd_line',
+                         'custom_run_time', 'submit_name', 'priority', 'document_password', 'environment_variable',
+                         )
 
 
 class Client(BaseClient):
@@ -60,6 +65,10 @@ class Client(BaseClient):
 
     def get_state(self, key):
         return self._http_request(method='GET', url_suffix=f'/report/{key}/state')
+
+    def submit_file(self, file_contents, params: Dict[str, Any]):
+        return self._http_request(method='POST', data=params, url_suffix='submit/file',files = {'file' :
+            (file_contents['name'] , open(file_contents["path"], 'rb'))})
 
 
 def map_object(obj: Any, maprules: Dict[str, str], only_given_fields=False):
@@ -173,7 +182,7 @@ def crowdstrike_get_screenshots_command(client: Client, args: Dict[str, Any]):
     return [to_image_result(image) for image in client.get_screenshots(key)]
 
 
-def poll(name, interval=30, timeout=600):
+def poll(name, interval=30, timeout=600):  # todo move to base?
     """Using this, the first argument is a bool whether or not the method has finished, the second argument is the
     finished result, or the result we want to be shown in case polling is False"""
 
@@ -198,7 +207,21 @@ def poll(name, interval=30, timeout=600):
     return dec
 
 
-@poll('crowdstrike-result', 11, 60)  # todo return not dep method
+def get_default_file_name(fileype):
+    return f"CrowdStrike_report_{round(time.time())}.{get_file_suffix(fileype)}"
+
+
+def get_file_suffix(filetype):
+    if filetype in ('pcap', 'bin', 'xml', 'html'):
+        return 'gz'
+    if filetype == 'json':
+        return 'json'
+    if filetype in ('misp', 'stix'):
+        return 'xml'
+    return filetype
+
+
+@poll('crowdstrike-result', 11, 60)
 def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, CommandResults):
     key = get_api_id(args)
     report_response = client.get_report(key, args['file-type'])
@@ -206,7 +229,8 @@ def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, C
     successful_response = report_response.status_code == 200
 
     if successful_response:
-        ret_list = [fileResult('filename.txt', report_response.content, file_type=entryTypes['entryInfoFile'])]
+        ret_list = [fileResult(get_default_file_name(args['file-type']), report_response.content,
+                               file_type=EntryType.ENTRY_INFO_FILE)]
         if args.get('file'):
             ret_list.append(crowdstrike_scan_command(client, args))
         return False, ret_list
@@ -219,7 +243,6 @@ def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, C
 
         if args.get('Polling'):  # extra fetch if we dont poll
             state = client.get_state(key)
-            demisto.results(f'state check: {state}')
             demisto.debug(f'state to check if should poll response: {state}')
             return state['state'] != 'ERROR', error_response
 
@@ -247,11 +270,12 @@ def crowdstrike_search_command(client: Client, args):
 @poll('cs-falcon-sandbox-scan', 20, 60)
 def crowdstrike_scan_command(client: Client, args):
     scan_response = client.scan(args['file'].split(','))
-    files = [Common.File(size=res['size'], file_type = res['type'], sha1=res['sha1'], sha256=res['sha256'],
-                         sha512=res['sha512'],name=res['submit_name'], ssdeep=res['ssdeep'], dbot_score=get_dbot_score(res['sha256'],res['threat_score'])) for res in scan_response]
+    files = [Common.File(size=res['size'], file_type=res['type'], sha1=res['sha1'], sha256=res['sha256'],
+                         sha512=res['sha512'], name=res['submit_name'], ssdeep=res['ssdeep'],
+                         dbot_score=get_dbot_score(res['sha256'], res['threat_score'])) for res in scan_response]
     command_result = CommandResults(outputs_prefix='CrowdStrike.Report', indicators=files,
                                     raw_response=scan_response, outputs=scan_response)
-    return False, command_result  # TODO check if empty
+    return len(scan_response) == 0, command_result
 
 
 def get_dbot_score(filehash, raw_score: int):
@@ -296,6 +320,16 @@ def crowdstrike_analysis_overview_refresh(client: Client, args):
     return CommandResults(readable_output='Successful')
 
 
+def get_submission_arguments(args) -> Dict[str, Any]:
+    return {arg: args[arg] for arg in SUBMISSION_PARAMETERS if args.get(arg)}
+
+
+def crowdstrike_submit_sample_command(client: Client, args):
+    file_contents = demisto.getFilePath(args['entryId'])
+    submission_args = get_submission_arguments(args)
+    client.submit_file(file_contents, submission_args)
+
+
 def main() -> None:
     """main function, parses params and runs command functions
 
@@ -337,7 +371,8 @@ def main() -> None:
             crowdstrike_result_command: ['cs-falcon-sandbox-result', 'crowdstrike-result'],
             crowdstrike_analysis_overview_command: ['cs-falcon-sandbox-analysis-overview'],
             crowdstrike_analysis_overview_summary_command: ['cs-falcon-sandbox-analysis-overview-summary'],
-            crowdstrike_analysis_overview_refresh: ['cs-falcon-sandbox-analysis-overview-refresh']
+            crowdstrike_analysis_overview_refresh: ['cs-falcon-sandbox-analysis-overview-refresh'],
+            crowdstrike_submit_sample_command: ['crowdstrike-submit-sample', 'cs-falcon-sandbox-submit-sample']
         }
         commands_dict = {}
         for command in backwards_dictionary:
