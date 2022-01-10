@@ -27,11 +27,11 @@ DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'  # ISO8601 format with UTC, default in XSOAR
 SEARCH_TERM_QUERY_ARGS = ('filename', 'filetype', 'filetype_desc', 'env_id', 'country', 'verdict', 'av_detect',
                           'vx_family', 'tag', 'date_from', 'date_to', 'port', 'host', 'domain', 'url', 'similiar_to',
                           'context', 'imp_hash', 'ssdeep', 'authentihash')
-SUBMISSION_PARAMETERS = ('environment_id', 'no_share_third_party', 'allow_community_access','no_hash_lookup',
+SUBMISSION_PARAMETERS = {'environmentID', 'no_share_third_party', 'allow_community_access', 'no_hash_lookup',
                          'action_script', 'hybrid_analysis', 'experimental_anti_evasion', 'script_logging',
                          'input_sample_tampering', 'network_settings', 'email', 'comment', 'custom_cmd_line',
                          'custom_run_time', 'submit_name', 'priority', 'document_password', 'environment_variable',
-                         )
+                         }
 
 
 class Client(BaseClient):
@@ -67,8 +67,8 @@ class Client(BaseClient):
         return self._http_request(method='GET', url_suffix=f'/report/{key}/state')
 
     def submit_file(self, file_contents, params: Dict[str, Any]):
-        return self._http_request(method='POST', data=params, url_suffix='submit/file',files = {'file' :
-            (file_contents['name'] , open(file_contents["path"], 'rb'))})
+        return self._http_request(method='POST', data=params, url_suffix='submit/file', files=
+        {'file': (file_contents['name'], open(file_contents["path"], 'rb'))})  # todo does this work with all files?
 
 
 def map_object(obj: Any, maprules: Dict[str, str], only_given_fields=False):
@@ -183,21 +183,22 @@ def crowdstrike_get_screenshots_command(client: Client, args: Dict[str, Any]):
 
 
 def poll(name, interval=30, timeout=600):  # todo move to base?
-    """Using this, the first argument is a bool whether or not the method has finished, the second argument is the
-    finished result, or the result we want to be shown in case polling is False"""
+    """todo how to use this"""
 
     def dec(func):
         def inner(client, args):
             demisto.debug('args:' + str(args))
             if args.get('Polling'):
                 ScheduledCommand.raise_error_if_not_supported()
-                continue_poll, result = func(client, args)
-                if not continue_poll:
+                continue_poll_provider, result = func(client, args)
+                should_poll = continue_poll_provider if isinstance(continue_poll_provider, bool) \
+                    else continue_poll_provider()
+                if not should_poll:
                     return result
                 polling_args = args
-                return CommandResults(readable_output='Fetching Results:',
+                return CommandResults(readable_output='Fetching Results:' if not args.get('polled_once') else None,
                                       scheduled_command=ScheduledCommand(command=name, next_run_in_seconds=interval,
-                                                                         args={**polling_args},
+                                                                         args={**polling_args, 'polled_once': True},
                                                                          timeout_in_seconds=timeout))
             else:
                 return func(client, args)[1]
@@ -221,7 +222,15 @@ def get_file_suffix(filetype):
     return filetype
 
 
-@poll('crowdstrike-result', 11, 60)
+def has_error_state(client, key):
+    state = client.get_state(key)
+    demisto.debug(f'state to check if should poll response: {state}')
+    if state['state'] == 'ERROR':
+        raise Exception(f'Got Error state from server: {state}')
+    return False
+
+
+@poll('crowdstrike-result')
 def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, CommandResults):
     key = get_api_id(args)
     report_response = client.get_report(key, args['file-type'])
@@ -241,12 +250,7 @@ def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, C
                                                         f"{report_response.status_code}, response: {report_response.text}",
                                         entry_type=entryTypes['error'])
 
-        if args.get('Polling'):  # extra fetch if we dont poll
-            state = client.get_state(key)
-            demisto.debug(f'state to check if should poll response: {state}')
-            return state['state'] != 'ERROR', error_response
-
-        return False, error_response
+        return lambda: not has_error_state(client, key), error_response
 
 
 def crowdstrike_search_command(client: Client, args):
@@ -267,7 +271,7 @@ def crowdstrike_search_command(client: Client, args):
     )
 
 
-@poll('cs-falcon-sandbox-scan', 20, 60)
+@poll('cs-falcon-sandbox-scan')
 def crowdstrike_scan_command(client: Client, args):
     scan_response = client.scan(args['file'].split(','))
     files = [Common.File(size=res['size'], file_type=res['type'], sha1=res['sha1'], sha256=res['sha256'],
@@ -275,7 +279,13 @@ def crowdstrike_scan_command(client: Client, args):
                          dbot_score=get_dbot_score(res['sha256'], res['threat_score'])) for res in scan_response]
     command_result = CommandResults(outputs_prefix='CrowdStrike.Report', indicators=files,
                                     raw_response=scan_response, outputs=scan_response)
-    return len(scan_response) == 0, command_result
+    if len(scan_response) != 0:
+        return False, command_result
+    try:
+        key = get_api_id(args)
+        return lambda: not has_error_state(client, key), command_result
+    except ValueError:
+        return True, command_result
 
 
 def get_dbot_score(filehash, raw_score: int):
@@ -321,13 +331,16 @@ def crowdstrike_analysis_overview_refresh(client: Client, args):
 
 
 def get_submission_arguments(args) -> Dict[str, Any]:
-    return {arg: args[arg] for arg in SUBMISSION_PARAMETERS if args.get(arg)}
+    return {camel_case_to_underscore(arg): args[arg] for arg in SUBMISSION_PARAMETERS if args.get(arg)}
 
 
 def crowdstrike_submit_sample_command(client: Client, args):
     file_contents = demisto.getFilePath(args['entryId'])
     submission_args = get_submission_arguments(args)
-    client.submit_file(file_contents, submission_args)
+    response = client.submit_file(file_contents, submission_args)
+    return [CommandResults(outputs_prefix='Crowdstrike.Submit', outputs_key_field='sha256', raw_response=response),
+            crowdstrike_scan_command(client,
+                                     {'file': response['sha256'], 'JobID': response['job_id'], "Polling": True})]
 
 
 def main() -> None:
