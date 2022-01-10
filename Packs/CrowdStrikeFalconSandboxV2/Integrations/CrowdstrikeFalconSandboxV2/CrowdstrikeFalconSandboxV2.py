@@ -386,10 +386,9 @@ def crowdstrike_sample_download_command(client: Client, args):
     response = client.download_sample(hash_value)
 
     command_results = CommandResults(
-        readable_output=f"Requested sample is available for download under "
-                        f"the name {hash_value}"
+        readable_output=f"Requested sample is available for download under the name {hash_value}.gz"
     )
-    return [command_results, fileResult(hash_value, data=response.content, file_type=EntryType.FILE)]
+    return [command_results, fileResult(hash_value + '.gz', data=response.content, file_type=EntryType.FILE)]
 
 
 def main() -> None:
