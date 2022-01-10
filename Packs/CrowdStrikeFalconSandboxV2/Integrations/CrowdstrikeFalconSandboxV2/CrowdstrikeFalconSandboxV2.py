@@ -329,7 +329,7 @@ def crowdstrike_analysis_overview_refresh_command(client: Client, args):
     return CommandResults(readable_output='Successful')
 
 
-@poll('crowdstrike-result')
+@poll('cs-falcon-sandbox-result')
 def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, CommandResults):
     key = get_api_id(args)
     report_response = client.get_report(key, args['file-type'])
