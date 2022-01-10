@@ -137,29 +137,20 @@ def to_image_result(image):
 
 
 def get_api_id(args):
-    if args.get('file') and args.get('environmentID'):
-        return f"{args['file']}:{args['environmentID']}"
+    if args.get('file') and (args.get('environmentID') or args.get('environmentId')):  # backwards compatibility
+        return f"{args['file']}:{args.get('environmentID') or args.get('environmentId')}"
     elif args.get('JobID'):
         return args['JobID']
     else:
         raise ValueError('Must supply JobID or environmentID and file')
 
 
-def test_module(client: Client) -> str:
+def test_module(client: Client, _) -> str:
     """Tests API connectivity and authentication'
-
-    Returning 'ok' indicates that the integration works like it is supposed to.
-    Connection to the service is successful.
-    Raises exceptions if something goes wrong.
-
-    :type client: ``Client``
-    :param Client: client to use
-
     :return: 'ok' if test passed, anything else will fail the test.
     :rtype: ``str``
     """
 
-    message: str = ''
     try:
         client.get_environments()
         message = 'ok'
