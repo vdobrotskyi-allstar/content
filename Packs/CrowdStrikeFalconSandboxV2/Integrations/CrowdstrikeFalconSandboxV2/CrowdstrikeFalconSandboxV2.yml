@@ -39,7 +39,6 @@ script:
   dockerimage: demisto/python3:3.9.9.25564
   commands:
     - name: cs-falcon-sandbox-scan
-      polling: true
       description: Get summary information for a given MD5, SHA1 or SHA256 and all the
         reports generated for any environment ID
       deprecated: true
@@ -173,7 +172,6 @@ script:
           type: string
       description: Get a list of all available environments
     - name: crowdstrike-submit-sample
-      polling: true
       arguments:
         - name: entryId
           required: true
@@ -419,11 +417,12 @@ script:
         - name: JobID
           description: Job ID of file to generate report of (supported only in v2)
         - name: Polling
-          description: whether the command should poll until receiving a result
+          description: wether the command should poll until receiving a result
           required: false
           isArray: false
-          type: boolean
+          defaultValue: "False"
           predefined:
+            - ""
       outputs:
         - contextPath: DBotScore.Indicator
           description: The indicator we tested
@@ -696,6 +695,18 @@ script:
       arguments:
         - name: file
           description: The sha256 hash of a file
+          required: true
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+      outputs: []
+    - name: cs-falcon-sandbox-sample-download
+      description: download sample file
+      deprecated: false
+      arguments:
+        - name: file
+          description: ""
           required: true
           isArray: false
           defaultValue: ""

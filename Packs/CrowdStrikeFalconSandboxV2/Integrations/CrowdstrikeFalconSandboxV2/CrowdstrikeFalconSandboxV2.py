@@ -13,6 +13,7 @@ This is an empty structure file. Check an example at;
 https://github.com/demisto/content/blob/master/Packs/HelloWorld/Integrations/HelloWorld/HelloWorld.py
 
 """
+import urllib.parse
 
 import demistomock as demisto
 from CommonServerPython import *  # noqa # pylint: disable=unused-wildcard-import
@@ -66,11 +67,19 @@ class Client(BaseClient):
     def get_state(self, key):
         return self._http_request(method='GET', url_suffix=f'/report/{key}/state')
 
+    def submit_url(self, url, params: Dict[str, Any]):
+        return self._http_request(method='POST', data={'url': urllib.parse.quote(url), **params},
+                                  url_suffix='/submit/url')
+
     def submit_file(self, file_contents, params: Dict[str, Any]):
-        return self._http_request(method='POST', data=params, url_suffix='submit/file', files=
-        {'file': (file_contents['name'], open(file_contents["path"], 'rb'))})  # todo does this work with all files?
+        return self._http_request(method='POST', data=params, url_suffix='/submit/file', files=
+        {'file': (file_contents['name'], open(file_contents["path"], 'rb'))})
+
+    def download_sample(self, sha256hash):
+        return self._http_request(method='GET', url_suffix=f'/overview/{sha256hash}/sample',resp_type="response")
 
 
+# TODO was this used
 def map_object(obj: Any, maprules: Dict[str, str], only_given_fields=False):
     # class InlineClass(object):
     #     def __init__(self, dict):
@@ -164,24 +173,6 @@ def test_module(client: Client) -> str:
     return message
 
 
-def crowdstrike_get_environments_command(client: Client, _):
-    environments = client.get_environments()
-    demisto.info(environments)
-    return CommandResults(
-        outputs_prefix='CrowdStrike.Environment',
-        outputs_key_field='id',
-        outputs=environments,
-        readable_output=tableToMarkdown('All Environments:', environments, ['id', 'description'], removeNull=True,
-                                        headerTransform=lambda x: {'id': '_ID', 'description': 'Description'}[x]),
-        raw_response=environments
-    )
-
-
-def crowdstrike_get_screenshots_command(client: Client, args: Dict[str, Any]):
-    key = get_api_id(args)
-    return [to_image_result(image) for image in client.get_screenshots(key)]
-
-
 def poll(name, interval=30, timeout=600):  # todo move to base?
     """todo how to use this"""
 
@@ -212,7 +203,7 @@ def get_default_file_name(fileype):
     return f"CrowdStrike_report_{round(time.time())}.{get_file_suffix(fileype)}"
 
 
-def get_file_suffix(filetype):
+def get_file_suffix(filetype='bin'):
     if filetype in ('pcap', 'bin', 'xml', 'html'):
         return 'gz'
     if filetype == 'json':
@@ -230,27 +221,71 @@ def has_error_state(client, key):
     return False
 
 
-@poll('crowdstrike-result')
-def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, CommandResults):
-    key = get_api_id(args)
-    report_response = client.get_report(key, args['file-type'])
-    demisto.debug(f'get report response code: {report_response.status_code}')
-    successful_response = report_response.status_code == 200
+def get_dbot_score(filehash, raw_score: int):
+    def calc_score():
+        return {3: 0,
+                2: 3,
+                1: 2,
+                0: 1}.get(raw_score, 0)
 
-    if successful_response:
-        ret_list = [fileResult(get_default_file_name(args['file-type']), report_response.content,
-                               file_type=EntryType.ENTRY_INFO_FILE)]
-        if args.get('file'):
-            ret_list.append(crowdstrike_scan_command(client, args))
-        return False, ret_list
+    return Common.DBotScore(indicator=filehash, integration_name='CrowdStrike Falcon Sandbox V2',
+                            indicator_type=DBotScoreType.FILE, score=calc_score())
 
-    else:
-        error_response = CommandResults(raw_response=report_response,
-                                        readable_output="Falcon Sandbox returned an error: status code " +
-                                                        f"{report_response.status_code}, response: {report_response.text}",
-                                        entry_type=entryTypes['error'])
 
-        return lambda: not has_error_state(client, key), error_response
+def get_submission_arguments(args) -> Dict[str, Any]:
+    return {camel_case_to_underscore(arg): args[arg] for arg in SUBMISSION_PARAMETERS if args.get(arg)}
+
+
+def submission_response(response):
+    return CommandResults(outputs_prefix='Crowdstrike.Submit', outputs_key_field='sha256', raw_response=response)
+
+
+def detonate_response(client, response):
+    return [submission_response(response), crowdstrike_scan_command(client,
+                                                                    {'file': response['sha256'],
+                                                                     'JobID': response['job_id'], "Polling": True})]
+
+
+def crowdstrike_submit_sample_command(client: Client, args):
+    file_contents = demisto.getFilePath(args['entryId'])
+    submission_args = get_submission_arguments(args)
+    return client.submit_file(file_contents, submission_args)
+
+
+def crowdstrike_submit_url(client: Client, args):
+    submission_args = get_submission_arguments(args)
+    url = args['url']
+    return client.submit_url(url, submission_args)
+
+
+def crowdstrike_submit_url_command(client: Client, args):
+    return submission_response(crowdstrike_submit_url(client, args))
+
+
+def crowdstrike_submit_sample(client: Client, args):
+    return submission_response(crowdstrike_submit_sample_command(client, args))
+
+
+def crowdstrike_detonate_url_command(client: Client, args):
+    return detonate_response(crowdstrike_submit_url(client, args))
+
+
+def crowdstrike_detonate_file_command(client: Client, args):
+    return detonate_response(crowdstrike_submit_sample(client, args))
+
+
+def crowdstrike_analysis_overview_command(client: Client, args):
+    result = client.analysis_overview(args['file'])
+    file = Common.File(sha256=result['sha256'], size=result['size'], file_type=result['type'],
+                       dbot_score=get_dbot_score(args['file'], result['threat_score']))
+    return CommandResults(
+        outputs_prefix='CrowdStrike.AnalysisOverview',
+        outputs_key_field='sha256',
+        outputs=result,
+        raw_response=result,
+        indicator=file
+        # TODO what should be human readable
+    )
 
 
 def crowdstrike_search_command(client: Client, args):
@@ -288,31 +323,6 @@ def crowdstrike_scan_command(client: Client, args):
         return True, command_result
 
 
-def get_dbot_score(filehash, raw_score: int):
-    def calc_score():
-        return {3: 0,
-                2: 3,
-                1: 2,
-                0: 1}.get(raw_score, 0)
-
-    return Common.DBotScore(indicator=filehash, integration_name='CrowdStrike Falcon Sandbox V2',
-                            indicator_type=DBotScoreType.FILE, score=calc_score())
-
-
-def crowdstrike_analysis_overview_command(client: Client, args):
-    result = client.analysis_overview(args['file'])
-    file = Common.File(sha256=result['sha256'], size=result['size'], file_type=result['type'],
-                       dbot_score=get_dbot_score(args['file'], result['threat_score']))
-    return CommandResults(
-        outputs_prefix='CrowdStrike.AnalysisOverview',
-        outputs_key_field='sha256',
-        outputs=result,
-        raw_response=result,
-        indicator=file
-        # TODO what should be human readable
-    )
-
-
 def crowdstrike_analysis_overview_summary_command(client: Client, args):
     result = client.analysis_overview_summary(args['file'])
     return CommandResults(
@@ -325,22 +335,61 @@ def crowdstrike_analysis_overview_summary_command(client: Client, args):
     )
 
 
-def crowdstrike_analysis_overview_refresh(client: Client, args):
+def crowdstrike_analysis_overview_refresh_command(client: Client, args):
     client.analysis_overview_refresh(args['file'])
     return CommandResults(readable_output='Successful')
 
 
-def get_submission_arguments(args) -> Dict[str, Any]:
-    return {camel_case_to_underscore(arg): args[arg] for arg in SUBMISSION_PARAMETERS if args.get(arg)}
+@poll('crowdstrike-result')
+def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, CommandResults):
+    key = get_api_id(args)
+    report_response = client.get_report(key, args['file-type'])
+    demisto.debug(f'get report response code: {report_response.status_code}')
+    successful_response = report_response.status_code == 200
+
+    if successful_response:
+        ret_list = [fileResult(get_default_file_name(args['file-type']), report_response.content,
+                               file_type=EntryType.ENTRY_INFO_FILE)]
+        if args.get('file'):
+            ret_list.append(crowdstrike_scan_command(client, args))
+        return False, ret_list
+
+    else:
+        error_response = CommandResults(raw_response=report_response,
+                                        readable_output="Falcon Sandbox returned an error: status code " +
+                                                        f"{report_response.status_code}, response: {report_response.text}",
+                                        entry_type=entryTypes['error'])
+
+        return lambda: not has_error_state(client, key), error_response
 
 
-def crowdstrike_submit_sample_command(client: Client, args):
-    file_contents = demisto.getFilePath(args['entryId'])
-    submission_args = get_submission_arguments(args)
-    response = client.submit_file(file_contents, submission_args)
-    return [CommandResults(outputs_prefix='Crowdstrike.Submit', outputs_key_field='sha256', raw_response=response),
-            crowdstrike_scan_command(client,
-                                     {'file': response['sha256'], 'JobID': response['job_id'], "Polling": True})]
+def crowdstrike_get_environments_command(client: Client, _):
+    environments = client.get_environments()
+    demisto.info(environments)
+    return CommandResults(
+        outputs_prefix='CrowdStrike.Environment',
+        outputs_key_field='id',
+        outputs=environments,
+        readable_output=tableToMarkdown('All Environments:', environments, ['id', 'description'], removeNull=True,
+                                        headerTransform=lambda x: {'id': '_ID', 'description': 'Description'}[x]),
+        raw_response=environments
+    )
+
+
+def crowdstrike_get_screenshots_command(client: Client, args: Dict[str, Any]):
+    key = get_api_id(args)
+    return [to_image_result(image) for image in client.get_screenshots(key)]
+
+
+def crowdstrike_sample_download_command(client: Client, args):
+    hash_value = args['file']
+    response = client.download_sample(hash_value)
+
+    command_results = CommandResults(
+        readable_output=f"Requested sample is available for download under "
+                        f"the name {hash_value}"
+    )
+    return [command_results, fileResult(hash_value, data=response.content, file_type=EntryType.FILE)]
 
 
 def main() -> None:
@@ -384,8 +433,12 @@ def main() -> None:
             crowdstrike_result_command: ['cs-falcon-sandbox-result', 'crowdstrike-result'],
             crowdstrike_analysis_overview_command: ['cs-falcon-sandbox-analysis-overview'],
             crowdstrike_analysis_overview_summary_command: ['cs-falcon-sandbox-analysis-overview-summary'],
-            crowdstrike_analysis_overview_refresh: ['cs-falcon-sandbox-analysis-overview-refresh'],
-            crowdstrike_submit_sample_command: ['crowdstrike-submit-sample', 'cs-falcon-sandbox-submit-sample']
+            crowdstrike_analysis_overview_refresh_command: ['cs-falcon-sandbox-analysis-overview-refresh'],
+            crowdstrike_submit_sample_command: ['crowdstrike-submit-sample', 'cs-falcon-sandbox-submit-sample'],
+            crowdstrike_submit_url_command: ['cs-falcon-sandbox-submit-url', 'crowdstrike-submit-url'],
+            crowdstrike_detonate_url_command: ['cs-falcon-sandbox-detonate-url'],
+            crowdstrike_detonate_file_command: ['cs-falcon-sandbox-detonate-file'],
+            crowdstrike_sample_download_command: ['cs-falcon-sandbox-sample-download']
         }
         commands_dict = {}
         for command in backwards_dictionary:
