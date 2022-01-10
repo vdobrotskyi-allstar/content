@@ -643,6 +643,7 @@ script:
       \ playbook instead) Detonates URL address through Falcon Sandbox (supported\
       \ only in v2)"
   - name: crowdstrike-submit-file-by-url
+    deprecated: true
     arguments:
     - name: environmentID
       description: Environment ID to submit file to (get all IDs via crowdstrike-get-environments)

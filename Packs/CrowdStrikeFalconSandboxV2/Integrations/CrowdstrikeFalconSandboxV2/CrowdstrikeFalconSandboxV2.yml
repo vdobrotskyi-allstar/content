@@ -48,6 +48,7 @@ script:
       arguments:
         - name: file
           required: true
+          isArray: false
           default: true
           description: File hash (MD5, SHA1 or SHA256)
       outputs:
@@ -180,7 +181,7 @@ script:
         - name: environmentID
           required: true
           description: Environment ID to submit file to (get all IDs via
-            crowdstrike-get-environments)
+            cs-falcon-sandbox-get-environments)
           defaultValue: "100"
       outputs:
         - contextPath: File.SHA256
@@ -399,7 +400,7 @@ script:
           description: File hash (MD5, SHA1 or SHA256) - Mandatory in v1
         - name: environmentID
           description: environment ID to submit file to (get all via
-            crowdstrike-get-environments)  - Mandatory in v1.
+            cs-falcon-sandbox-get-environments)  - Mandatory in v1.
           defaultValue: "100"
         - name: file-type
           auto: PREDEFINED
@@ -445,7 +446,7 @@ script:
           description: War-room entry ID of sample file
         - name: environmentID
           description: environment ID to submit file to(get all via
-            crowdstrike-get-environments). Default is 100, or other WINDOWS ID
+            cs-falcon-sandbox-get-environments). Default is 100, or other WINDOWS ID
         - name: delay
           description: Delay wait time between calls (in seconds)
           defaultValue: "3"
@@ -605,7 +606,7 @@ script:
           description: "URL address to be submitted "
         - name: environmentID
           description: Environment ID to submit URL to (get all via
-            crowdstrike-get-environments). Default is 100, or other WINDOWS ID
+            cs-falcon-sandbox-get-environments). Default is 100, or other WINDOWS ID
           defaultValue: "100"
         - name: delay
           description: Delay wait time between calls (in seconds)
@@ -646,7 +647,7 @@ script:
       arguments:
         - name: environmentID
           description: Environment ID to submit file to (get all IDs via
-            crowdstrike-get-environments)
+            cs-falcon-sandbox-get-environments)
           defaultValue: "100"
         - name: url
           required: true
@@ -701,6 +702,13 @@ script:
           predefined:
             - ""
       outputs: []
+    - name: file
+      arguments:
+        - name: file
+          default: true
+          required: true
+          description: List of files.
+          isArray: true
     - name: cs-falcon-sandbox-sample-download
       description: download sample file
       deprecated: false

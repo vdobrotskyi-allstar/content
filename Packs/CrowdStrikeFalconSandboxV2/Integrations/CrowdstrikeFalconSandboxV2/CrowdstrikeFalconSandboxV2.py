@@ -76,7 +76,7 @@ class Client(BaseClient):
         {'file': (file_contents['name'], open(file_contents["path"], 'rb'))})
 
     def download_sample(self, sha256hash):
-        return self._http_request(method='GET', url_suffix=f'/overview/{sha256hash}/sample',resp_type="response")
+        return self._http_request(method='GET', url_suffix=f'/overview/{sha256hash}/sample', resp_type="response")
 
 
 # TODO was this used
@@ -161,9 +161,7 @@ def test_module(client: Client) -> str:
 
     message: str = ''
     try:
-        # TODO: ADD HERE some code to test connectivity and authentication to your service.
-        # This  should validate all the inputs given in the integration configuration panel,
-        # either manually or by using an API that uses them.
+        client.get_environments()
         message = 'ok'
     except DemistoException as e:
         if 'Forbidden' in str(e) or 'Authorization' in str(e):  # TODO: make sure you capture authentication errors
@@ -366,12 +364,19 @@ def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, C
 def crowdstrike_get_environments_command(client: Client, _):
     environments = client.get_environments()
     demisto.info(environments)
+
+    readable_output_column_conversion = {
+        'id': '_ID', 'description': 'Description', 'architecture': 'Architecture',
+        'total_virtual_machines': 'Total VMS', 'busy_virtual_machines': 'Busy VMS', 'analysis_mode': 'Analysis mode',
+        'group_icon': 'Group icon'
+    }
     return CommandResults(
         outputs_prefix='CrowdStrike.Environment',
         outputs_key_field='id',
         outputs=environments,
-        readable_output=tableToMarkdown('All Environments:', environments, ['id', 'description'], removeNull=True,
-                                        headerTransform=lambda x: {'id': '_ID', 'description': 'Description'}[x]),
+        readable_output=tableToMarkdown('All Environments:',
+                                        environments, list(readable_output_column_conversion.keys()), removeNull=True,
+                                        headerTransform=lambda x: readable_output_column_conversion[x]),
         raw_response=environments
     )
 
