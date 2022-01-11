@@ -79,16 +79,9 @@ class Client(BaseClient):
         return self._http_request(method='GET', url_suffix=f'/overview/{sha256hash}/sample', resp_type="response")
 
 
-# TODO was this used
-def map_object(obj: Any, maprules: Dict[str, str], only_given_fields=False):
-    # class InlineClass(object):
-    #     def __init__(self, dict):
-    #         self.__dict__ = dict
-    #
-    # obj = InlineClass({'propertyName': 'propertyValue'})
-    return type('obj', (object,),
-                {maprules.get(key, key): obj.__dict__[key]
-                 for key in obj.__dict__.keys() if not only_given_fields or key in maprules})
+# for BW compatibility with v1 we need to return same object keys
+def map_dict_keys(obj: Dict, maprules: Dict[str, str], only_given_fields=False):
+    return {maprules.get(key, key): obj[key] for key in obj.keys() if not only_given_fields or key in maprules}
 
 
 def translate_verdict(param: str):
@@ -218,7 +211,8 @@ def get_dbot_score(filehash, raw_score: int):
                 0: 1}.get(raw_score, 0)
 
     return Common.DBotScore(indicator=filehash, integration_name='CrowdStrike Falcon Sandbox V2',
-                            indicator_type=DBotScoreType.FILE, score=calc_score(), malicious_description=f'Score of {calc_score()}' )
+                            indicator_type=DBotScoreType.FILE, score=calc_score(),
+                            malicious_description=f'Score of {calc_score()}')
 
 
 def get_submission_arguments(args) -> Dict[str, Any]:
@@ -236,7 +230,8 @@ def detonate_response(client, response):
 
 
 def crowdstrike_submit_sample_command(client: Client, args):
-    file_contents = demisto.getFilePath(args['entryId']) #is this a generic error when not found? Seems obscure. Add try except?
+    file_contents = demisto.getFilePath(
+        args['entryId'])  # is this a generic error when not found? Seems obscure. Add try except?
     submission_args = get_submission_arguments(args)
     return client.submit_file(file_contents, submission_args)
 
@@ -357,12 +352,14 @@ def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, C
 
 def crowdstrike_get_environments_command(client: Client, _):
     environments = client.get_environments()
-    demisto.info(environments)
+    environments = [map_dict_keys(env, {'environment_id': 'ID', 'total_virtual_machines': 'VMs_total',
+                                                'analysis_mode': 'analysisMode', 'group_icon': 'groupicon',
+                                                'busy_virtual_machines': 'VMs_busy'}) for env in environments]
 
     readable_output_column_conversion = {
-        'id': '_ID', 'description': 'Description', 'architecture': 'Architecture',
-        'total_virtual_machines': 'Total VMS', 'busy_virtual_machines': 'Busy VMS', 'analysis_mode': 'Analysis mode',
-        'group_icon': 'Group icon'
+        'ID': '_ID', 'description': 'Description', 'architecture': 'Architecture',
+        'VMs_total': 'Total VMS', 'VMs_busy': 'Busy VMS', 'analysisMode': 'Analysis mode',
+        'groupicon': 'Group icon'
     }
     return CommandResults(
         outputs_prefix='CrowdStrike.Environment',

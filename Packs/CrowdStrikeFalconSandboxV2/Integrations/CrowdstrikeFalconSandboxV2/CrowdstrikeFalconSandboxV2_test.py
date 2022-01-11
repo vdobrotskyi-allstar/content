@@ -14,7 +14,7 @@ import json
 import io
 
 from Packs.CrowdStrikeFalconSandboxV2.Integrations.CrowdstrikeFalconSandboxV2.CrowdstrikeFalconSandboxV2 import \
-    validated_search_terms, split_query_to_term_args, map_object
+    validated_search_terms, split_query_to_term_args, map_dict_keys
 
 
 def util_load_json(path):
@@ -54,17 +54,14 @@ def test_split_query_to_term_args():
     res = split_query_to_term_args(query)
     assert {'hello': 'world', 'three': 'split:fine'} == res
 
-def test_map_object():
-    class InlineClass(object):
-        def __init__(self, dict):
-            self.__dict__ = dict
 
-    obj = InlineClass({'propertyName': 'propertyValue', 'a' : 'b', 'x' : 'y'})
+def test_map_dict_keys():
+    orig = {'propertyName': 'propertyValue', 'a': 'b', 'x': 'y'}
 
-    res = map_object(obj, {'a' : 'c', 'x' : 'z'},True)
-    assert res.c == 'b'
-    assert res.__dict__.get('.propertyName', None) is None
+    res = map_dict_keys(orig, {'a': 'c', 'x': 'z'}, True)
+    assert res['c'] == 'b'
+    assert res.get('.propertyName', None) is None
 
-    res = map_object(obj, {'a' : 'c', 'x': 'z'}, False)
-    assert res.z == 'y'
-    assert res.propertyName == 'propertyValue'
+    res = map_dict_keys(orig, {'a': 'c', 'x': 'z'}, False)
+    assert res['z'] == 'y'
+    assert res['propertyName'] == 'propertyValue'

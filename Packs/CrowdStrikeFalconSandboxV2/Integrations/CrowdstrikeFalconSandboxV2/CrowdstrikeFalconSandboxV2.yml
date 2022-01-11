@@ -1,6 +1,6 @@
 commonfields:
   id: CrowdStrike Falcon Sandbox V2
-  version: 1.0.0
+  version: -1
 name: CrowdStrike Falcon Sandbox V2
 display: CrowdStrike Falcon Sandbox v2
 category: Forensics & Malware Analysis
@@ -1088,9 +1088,84 @@ script:
           predefined:
             - ""
       outputs:
-        - contextPath: CrowdStrike.AnalysisOverview
-          description: description
-          type: Unknown
+      - contextPath: Crowdstrike.AnalysisOverview.sha256
+        description: 'SHA256 of the file'
+        type: String
+      - contextPath: Crowdstrike.AnalysisOverview.last_file_name
+        description: ''
+        type: String
+      - contextPath: Crowdstrike.AnalysisOverview.threat_score
+        description: ''
+        type: Unknown
+      - contextPath: Crowdstrike.AnalysisOverview.verdict
+        description: ''
+        type: String
+      - contextPath: Crowdstrike.AnalysisOverview.url_analysis
+        description: ''
+        type: Boolean
+      - contextPath: Crowdstrike.AnalysisOverview.size
+        description: ''
+        type: Number
+      - contextPath: Crowdstrike.AnalysisOverview.type
+        description: ''
+        type: String
+      - contextPath: Crowdstrike.AnalysisOverview.type_short
+        description: ''
+        type: String
+      - contextPath: Crowdstrike.AnalysisOverview.analysis_start_time
+        description: ''
+        type: Unknown
+      - contextPath: Crowdstrike.AnalysisOverview.last_multi_scan
+        description: ''
+        type: Date
+      - contextPath: Crowdstrike.AnalysisOverview.architecture
+        description: ''
+        type: Unknown
+      - contextPath: Crowdstrike.AnalysisOverview.multiscan_result
+        description: ''
+        type: Number
+      - contextPath: Crowdstrike.AnalysisOverview.scanners.name
+        description: ''
+        type: String
+      - contextPath: Crowdstrike.AnalysisOverview.scanners.status
+        description: ''
+        type: String
+      - contextPath: Crowdstrike.AnalysisOverview.scanners.error_message
+        description: ''
+        type: Unknown
+      - contextPath: Crowdstrike.AnalysisOverview.scanners.progress
+        description: ''
+        type: Number
+      - contextPath: Crowdstrike.AnalysisOverview.scanners.total
+        description: ''
+        type: Number
+      - contextPath: Crowdstrike.AnalysisOverview.scanners.positives
+        description: ''
+        type: Number
+      - contextPath: Crowdstrike.AnalysisOverview.scanners.percent
+        description: ''
+        type: Number
+      - contextPath: Crowdstrike.AnalysisOverview.scanners.anti_virus_results.name
+        description: ''
+        type: String
+      - contextPath: Crowdstrike.AnalysisOverview.scanners.anti_virus_results.result
+        description: ''
+        type: Boolean
+      - contextPath: Crowdstrike.AnalysisOverview.scanners.anti_virus_results.threat_found
+        description: ''
+        type: String
+      - contextPath: Crowdstrike.AnalysisOverview.reports
+        description: ''
+        type: String
+      - contextPath: Crowdstrike.AnalysisOverview.whitelisted
+        description: ''
+        type: Boolean
+      - contextPath: Crowdstrike.AnalysisOverview.children_in_queue
+        description: ''
+        type: Number
+      - contextPath: Crowdstrike.AnalysisOverview.children_in_progress
+        description: ''
+        type: Number
     - name: cs-falcon-sandbox-analysis-overview-summary
       description: return overview for hash
       deprecated: false
