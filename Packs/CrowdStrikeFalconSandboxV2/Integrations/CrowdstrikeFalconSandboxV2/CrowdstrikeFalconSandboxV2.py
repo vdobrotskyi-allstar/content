@@ -267,7 +267,8 @@ def crowdstrike_analysis_overview_command(client: Client, args):
         outputs_key_field='sha256',
         outputs=result,
         raw_response=result,
-        indicator=file
+        indicator=file,
+        readable_output=tableToMarkdown("Analysis Overview:", result, removeNull=True)
         # TODO what should be human readable
     )
 
@@ -349,7 +350,7 @@ def create_scan_results_readable_output(scan_response):
         'total_signatures': 'total signatures'
 
     }
-    return tableToMarkdown('Scan Results:', scan_response, removeNull=True,
+    return tableToMarkdown('Scan Results:', scan_response,
                            headerTransform=lambda x: table_field_dict.get(x, x))
 
 
