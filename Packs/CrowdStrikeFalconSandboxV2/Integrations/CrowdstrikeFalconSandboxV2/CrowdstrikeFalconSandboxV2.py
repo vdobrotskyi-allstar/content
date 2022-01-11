@@ -218,7 +218,7 @@ def get_dbot_score(filehash, raw_score: int):
                 0: 1}.get(raw_score, 0)
 
     return Common.DBotScore(indicator=filehash, integration_name='CrowdStrike Falcon Sandbox V2',
-                            indicator_type=DBotScoreType.FILE, score=calc_score())
+                            indicator_type=DBotScoreType.FILE, score=calc_score(), malicious_description=f'Score of {calc_score()}' )
 
 
 def get_submission_arguments(args) -> Dict[str, Any]:
@@ -297,7 +297,8 @@ def crowdstrike_search_command(client: Client, args):
 
 @poll('cs-falcon-sandbox-scan')
 def crowdstrike_scan_command(client: Client, args):
-    scan_response = client.scan(args['file'].split(','))
+    hashes = args['file'].split(',')
+    scan_response = client.scan(hashes)
     files = [Common.File(size=res['size'], file_type=res['type'], sha1=res['sha1'], sha256=res['sha256'],
                          sha512=res['sha512'], name=res['submit_name'], ssdeep=res['ssdeep'],
                          dbot_score=get_dbot_score(res['sha256'], res['threat_score'])) for res in scan_response]
@@ -306,10 +307,12 @@ def crowdstrike_scan_command(client: Client, args):
     if len(scan_response) != 0:
         return False, command_result
     try:
-        key = get_api_id(args)
-        return lambda: not has_error_state(client, key), command_result
+        if len(hashes) == 1:
+            key = get_api_id(args)
+            return lambda: not has_error_state(client, key), command_result
     except ValueError:
-        return True, command_result
+        demisto.debug(f'Cannot get a key to check state for {hashes}')
+    return True, command_result
 
 
 def crowdstrike_analysis_overview_summary_command(client: Client, args):

@@ -41,12 +41,22 @@ script:
     - name: cs-falcon-sandbox-scan
       arguments:
         - name: file
-          description: File hash (MD5, SHA1 or SHA256)
+          description: Comma seperated list of file hashes (MD5, SHA1 or SHA256)
           required: true
-          isArray: false
+          isArray: true
           defaultValue: ""
           predefined:
             - ""
+        - name: Polling
+          description: Whether the command should poll until the result is ready
+          required: false
+          isArray: false
+          defaultValue: false
+          secret: true
+          auto: PREDEFINED
+          predefined:
+            - 'true'
+            - 'false'   
       outputs:
         - contextPath: File.SHA256
           description: SHA256 of the file
@@ -473,9 +483,19 @@ script:
             - ""
       outputs: []
     - name: cs-falcon-sandbox-result
+      polling: true
       description: Retrieve result data upon a file. NOTE - This command returns a file
       deprecated: false
       arguments:
+        - name: Polling
+          description: Whether the command should poll until the result is ready
+          required: false
+          isArray: false
+          defaultValue: true
+          auto: PREDEFINED
+          predefined:
+            - 'true'
+            - 'false'
         - name: file
           description: File hash (MD5, SHA1 or SHA256)
           required: false
@@ -604,7 +624,7 @@ script:
         - name: file
           default: true
           required: true
-          description: List of files.
+          description: Comman sepperated list of File hashes (MD5, SHA1 or SHA256).
           isArray: true
       outputs: []
     - name: cs-falcon-sandbox-sample-download
@@ -612,7 +632,7 @@ script:
       deprecated: false
       arguments:
         - name: file
-          description: ""
+          description: The sha256 hash of a file
           required: true
           isArray: false
           defaultValue: ""
