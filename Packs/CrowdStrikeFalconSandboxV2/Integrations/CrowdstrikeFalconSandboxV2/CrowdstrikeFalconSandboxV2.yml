@@ -160,21 +160,27 @@ script:
           auto: PREDEFINED
           defaultValue: ""
           predefined:
-            - 100
-            - 110
-            - 120
-            - 200
-            - 300
+            - "100"
+            - '110'
+            - '120'
+            - '200'
+            - '300'
         - name: no_share_third_party
           description: "When set to 'true', the sample is never shared with any third party." 
           required: false
           isArray: false
-          type: boolean
+          auto: PREDEFINED
+          predefined:
+            - 'true'
+            - 'false'
         - name: allow_community_access
           description: "When set to 'true', the sample will be available for the community."
           required: false
           isArray: false
-          type: boolean
+          auto: PREDEFINED
+          predefined:
+            - 'true'
+            - 'false'
         - name: action_script
           description: "Optional custom runtime action script. Available runtime scripts: default, default_maxantievasion, default_randomfiles, default_randomtheme, default_openie"
           required: false
@@ -213,8 +219,10 @@ script:
           required: false
           isArray: false
           defaultValue: ""
+          auto: PREDEFINED
           predefined:
-            - ""
+            - 'true'
+            - 'false'
         - name: network_settings
           description: "Network settings, by the default, fully operating network is set. Available options: default: 'Fully operating network', tor: 'Route network traffic via TOR', simulated: 'Simulate network traffic'"
           required: false
@@ -267,16 +275,16 @@ script:
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - 1
-            - 2
-            - 3
-            - 4
-            - 5
-            - 6
-            - 7
-            - 8
-            - 9
-            - 10
+            - '1'
+            - '2'
+            - '3'
+            - '4'
+            - '5'
+            - '6'
+            - '7'
+            - '8'
+            - '9'
+            - '10'
         - name: document_password
           description: "Optional document password that will be used to fill-in Adobe/Office password prompts"
           required: false
