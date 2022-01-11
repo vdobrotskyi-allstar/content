@@ -173,6 +173,14 @@ script:
           predefined:
             - 'true'
             - 'false'
+        - name: no_hash_lookup
+          description: "When set to 'true', the sample is never shared with any third party." 
+          required: false
+          isArray: false
+          auto: PREDEFINED
+          predefined:
+            - 'true'
+            - 'false'
         - name: allow_community_access
           description: "When set to 'true', the sample will be available for the community."
           required: false
@@ -205,15 +213,19 @@ script:
           required: false
           isArray: false
           defaultValue: ""
+          auto: PREDEFINED
           predefined:
-            - ""
+            - 'true'
+            - 'false'
         - name: script_logging
           description: "When set to 'true', will set the in-depth script logging engine of the Kernelmode Monitor."
           required: false
           isArray: false
           defaultValue: ""
+          auto: PREDEFINED
           predefined:
-            - ""
+            - 'true'
+            - 'false'
         - name: input_sample_tampering
           description: "When set to 'true', will allow experimental anti-evasion options of the Kernelmode Monitor that tamper with the input sample."
           required: false
