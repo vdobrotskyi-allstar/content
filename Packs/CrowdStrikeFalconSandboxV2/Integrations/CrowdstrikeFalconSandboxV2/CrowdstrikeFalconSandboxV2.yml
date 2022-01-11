@@ -52,7 +52,6 @@ script:
           required: false
           isArray: false
           defaultValue: false
-          secret: true
           auto: PREDEFINED
           predefined:
             - 'true'

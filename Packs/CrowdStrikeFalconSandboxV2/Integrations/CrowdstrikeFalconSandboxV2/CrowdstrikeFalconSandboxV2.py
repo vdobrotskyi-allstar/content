@@ -290,15 +290,37 @@ def crowdstrike_search_command(client: Client, args):
     )
 
 
+def file_with_bwc_fields(res):
+    file = Common.File(size=res['size'], file_type=res['type'], sha1=res['sha1'], sha256=res['sha256'], md5=res['md5'],
+                       sha512=res['sha512'], name=res['submit_name'], ssdeep=res['ssdeep'],
+                       malware_family=res['vx_family'],
+                       dbot_score=get_dbot_score(res['sha256'], res['threat_score']))
+
+    file.__dict__ |= map_dict_keys(res.__dict__, {
+        'sha1': 'SHA1',
+        'sha256': 'SHA256',
+        'md5': 'MD5',
+        'job_id': 'JobID',
+        'environment_id': 'environmentId',
+        'threat_score': 'threatscore',
+        'environment_description': 'environmentDescription',
+        'submit_name': 'submitname',
+        ' url_analysis': 'isurlanalysis',
+        'interesting:': 'isinteresting',
+        'vx_family': 'family'}, False)
+    return file
+
+
 @poll('cs-falcon-sandbox-scan')
 def crowdstrike_scan_command(client: Client, args):
     hashes = args['file'].split(',')
     scan_response = client.scan(hashes)
-    files = [Common.File(size=res['size'], file_type=res['type'], sha1=res['sha1'], sha256=res['sha256'],
-                         sha512=res['sha512'], name=res['submit_name'], ssdeep=res['ssdeep'],
-                         dbot_score=get_dbot_score(res['sha256'], res['threat_score'])) for res in scan_response]
+
+    files = [file_with_bwc_fields(res) for res in scan_response]
+
     command_result = CommandResults(outputs_prefix='CrowdStrike.Report', indicators=files,
-                                    raw_response=scan_response, outputs=scan_response)
+                                    raw_response=scan_response, outputs=scan_response,
+                                    readable_output=create_scan_results_readable_output(scan_response))
     if len(scan_response) != 0:
         return False, command_result
     try:
@@ -308,6 +330,27 @@ def crowdstrike_scan_command(client: Client, args):
     except ValueError:
         demisto.debug(f'Cannot get a key to check state for {hashes}')
     return True, command_result
+
+
+def create_scan_results_readable_output(scan_response):
+    table_field_dict = {
+        'threatlevel': 'threat level',
+        'total_network_connections': 'total network connections',
+        'targeturl': 'target url',
+        'classification_tags': 'classification tags',
+        'threatscore': 'threat score',
+        'total_processes': 'total processes',
+        'submitname': 'submit name',
+        'environmentDescription': 'environment description',
+        'isinteresting': 'interesting',
+        'environmentId': 'environment id',
+        'isurlanalysis': 'url analysis',
+        'analysis_start_time': 'analysis start time',
+        'total_signatures': 'total signatures'
+
+    }
+    return tableToMarkdown('Scan Results:', scan_response, removeNull=True,
+                           headerTransform=lambda x: table_field_dict.get(x, x))
 
 
 def crowdstrike_analysis_overview_summary_command(client: Client, args):
@@ -353,8 +396,8 @@ def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, C
 def crowdstrike_get_environments_command(client: Client, _):
     environments = client.get_environments()
     environments = [map_dict_keys(env, {'environment_id': 'ID', 'total_virtual_machines': 'VMs_total',
-                                                'analysis_mode': 'analysisMode', 'group_icon': 'groupicon',
-                                                'busy_virtual_machines': 'VMs_busy'}) for env in environments]
+                                        'analysis_mode': 'analysisMode', 'group_icon': 'groupicon',
+                                        'busy_virtual_machines': 'VMs_busy'}) for env in environments]
 
     readable_output_column_conversion = {
         'ID': '_ID', 'description': 'Description', 'architecture': 'Architecture',
