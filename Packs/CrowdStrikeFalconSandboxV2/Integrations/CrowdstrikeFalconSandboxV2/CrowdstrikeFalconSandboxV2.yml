@@ -1,6 +1,6 @@
 commonfields:
   id: CrowdStrike Falcon Sandbox V2
-  version: -1
+  version: 1.0.0
 name: CrowdStrike Falcon Sandbox V2
 display: CrowdStrike Falcon Sandbox v2
 category: Forensics & Malware Analysis
@@ -1140,4 +1140,4 @@ script:
 tests:
   - VxStream Test
   - Detonate File - Generic Test
-fromversion: 5.5.0
+fromversion: 6.2.0
