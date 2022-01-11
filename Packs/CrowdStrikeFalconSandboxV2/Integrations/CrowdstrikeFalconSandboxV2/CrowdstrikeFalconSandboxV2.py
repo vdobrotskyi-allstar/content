@@ -236,7 +236,7 @@ def detonate_response(client, response):
 
 
 def crowdstrike_submit_sample_command(client: Client, args):
-    file_contents = demisto.getFilePath(args['entryId'])
+    file_contents = demisto.getFilePath(args['entryId']) #is this a generic error when not found? Seems obscure. Add try except?
     submission_args = get_submission_arguments(args)
     return client.submit_file(file_contents, submission_args)
 

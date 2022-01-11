@@ -907,7 +907,8 @@ script:
       description: (Deprecated - Please use CrowdStrike Falcon Sandbox - Detonate URL
         playbook instead) Detonates URL address through Falcon Sandbox
         (supported only in v2)
-      deprecated: true
+      polling: true  
+      deprecated: false
       arguments:
         - name: url
           description: url for analyze or url of file to submit
