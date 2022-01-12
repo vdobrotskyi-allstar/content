@@ -271,10 +271,19 @@ def crowdstrike_search_command(client: Client, args):
     query_args = validated_search_terms(query_args)
     response = client.search(query_args)
 
+    key_name_changes = {'job_id': 'JobID',
+                        'sha256': 'SHA256',
+                        'environment_id': 'environmentId',
+                        'threat_score': 'threatscore',
+                        'environment_description': 'environmentDescription',
+                        'submit_name': 'submitname',
+                        'analysis_start_time': 'start_time'}
+
     def convert_to_file_res(res):
-        return Common.File(size=res['size'], sha256=res['sha256'], dbot_score=get_dbot_score(res['sha256']
-                                                                                             , res['threat_score']),
-                           extension=res['type_short'], name=res['submit_name'])
+        return BWCFile(res, key_name_changes, False, size=res['size'], sha256=res['sha256'],
+                       dbot_score=get_dbot_score(res['sha256']
+                                                 , res['threat_score']),
+                       extension=res['type_short'], name=res['submit_name'])
 
     return CommandResults(
         raw_response=response,
@@ -284,27 +293,36 @@ def crowdstrike_search_command(client: Client, args):
     )
 
 
-def file_with_bwc_fields(res):
-    class BWCFile(Common.File):
-        def to_context(self):
-            super_ret = super().to_context()
-            for key in super_ret.keys():
-                if key.startswith("File"):
-                    super_ret[key].update(map_dict_keys(res, {
-                        'sha1': 'SHA1',
-                        'sha256': 'SHA256',
-                        'md5': 'MD5',
-                        'job_id': 'JobID',
-                        'environment_id': 'environmentId',
-                        'threat_score': 'threatscore',
-                        'environment_description': 'environmentDescription',
-                        'submit_name': 'submitname',
-                        ' url_analysis': 'isurlanalysis',
-                        'interesting:': 'isinteresting',
-                        'vx_family': 'family'}, False))
-            return super_ret
+class BWCFile(Common.File):
 
-    file = BWCFile(size=res['size'], file_type=res['type'], sha1=res['sha1'], sha256=res['sha256'], md5=res['md5'],
+    def __init__(self, bwc_fields: Dict, key_change_map: Dict, only_given_fields, *args, **kwargs):
+        super(BWCFile, self).__init__(*args, **kwargs)
+        self.bwc_fields = bwc_fields
+        self.key_change_map = key_change_map
+        self.only_given_fields = only_given_fields
+
+    def to_context(self):
+        super_ret = super().to_context()
+        for key in super_ret.keys():
+            if key.startswith("File"):
+                super_ret[key].update(map_dict_keys(self.bwc_fields, self.key_change_map, self.only_given_fields))
+        return super_ret
+
+
+def file_with_bwc_fields(res):
+    file = BWCFile(res, {
+        'sha1': 'SHA1',
+        'sha256': 'SHA256',
+        'md5': 'MD5',
+        'job_id': 'JobID',
+        'environment_id': 'environmentId',
+        'threat_score': 'threatscore',
+        'environment_description': 'environmentDescription',
+        'submit_name': 'submitname',
+        ' url_analysis': 'isurlanalysis',
+        'interesting:': 'isinteresting',
+        'vx_family': 'family'}, False, size=res['size'], file_type=res['type'], sha1=res['sha1'], sha256=res['sha256'],
+                   md5=res['md5'],
                    sha512=res['sha512'], name=res['submit_name'], ssdeep=res['ssdeep'],
                    malware_family=res['vx_family'],
                    dbot_score=get_dbot_score(res['sha256'], res['threat_level']))
