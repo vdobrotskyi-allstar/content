@@ -23,13 +23,13 @@ configuration:
   - name: insecure
     display: Trust any certificate (not secure)
     required: false
-    defaultvalue: ''
+    defaultvalue: "true"
     type: 8
     additionalinfo: null
   - name: proxy
     display: Use system proxy settings
     required: false
-    defaultvalue: ''
+    defaultvalue: "true"
     type: 8
     additionalinfo: null
 script:
@@ -54,8 +54,8 @@ script:
           defaultValue: false
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'   
+            - "true"
+            - "false"
       outputs:
         - contextPath: File.SHA256
           description: SHA256 of the file
@@ -117,12 +117,6 @@ script:
         - contextPath: DBotScore.Score
           description: The actual score
           type: number
-        - contextPath: File.hash
-          description: The hash used to query the file
-          type: string
-        - contextPath: File.state
-          description: The state of the file test
-          type: string
       description: Get summary information for a given MD5, SHA1 or SHA256 and all the
         reports generated for any environment ID
     - name: cs-falcon-sandbox-get-environments
@@ -163,43 +157,48 @@ script:
           predefined:
             - ""
         - name: environmentID
-          description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu 16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64 bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32 bit"'
+          description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu
+            16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
+            bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32
+            bit"'
           required: true
           isArray: false
           auto: PREDEFINED
           defaultValue: ""
           predefined:
             - "100"
-            - '110'
-            - '120'
-            - '200'
-            - '300'
+            - "110"
+            - "120"
+            - "200"
+            - "300"
         - name: no_share_third_party
-          description: "When set to 'true', the sample is never shared with any third party." 
+          description: When set to 'true', the sample is never shared with any third party.
           required: false
           isArray: false
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: no_hash_lookup
-          description: "When set to 'true', the sample is never shared with any third party." 
+          description: When set to 'true', the sample is never shared with any third party.
           required: false
           isArray: false
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: allow_community_access
-          description: "When set to 'true', the sample will be available for the community."
+          description: When set to 'true', the sample will be available for the community.
           required: false
           isArray: false
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: action_script
-          description: "Optional custom runtime action script. Available runtime scripts: default, default_maxantievasion, default_randomfiles, default_randomtheme, default_openie"
+          description: "Optional custom runtime action script. Available runtime scripts:
+            default, default_maxantievasion, default_randomfiles,
+            default_randomtheme, default_openie"
           required: false
           isArray: false
           auto: PREDEFINED
@@ -211,41 +210,47 @@ script:
             - default_randomtheme
             - default_openie
         - name: hybrid_analysis
-          description: When set to 'false', no memory dumps or memory dump analysis will take place.
+          description: When set to 'false', no memory dumps or memory dump analysis will
+            take place.
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: experimental_anti_evasion
-          description: "When set to 'true', will set all experimental anti-evasion options of the Kernelmode Monitor."
+          description: When set to 'true', will set all experimental anti-evasion options
+            of the Kernelmode Monitor.
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: script_logging
-          description: "When set to 'true', will set the in-depth script logging engine of the Kernelmode Monitor."
+          description: When set to 'true', will set the in-depth script logging engine of
+            the Kernelmode Monitor.
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: input_sample_tampering
-          description: "When set to 'true', will allow experimental anti-evasion options of the Kernelmode Monitor that tamper with the input sample."
+          description: When set to 'true', will allow experimental anti-evasion options of
+            the Kernelmode Monitor that tamper with the input sample.
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: network_settings
-          description: "Network settings, by the default, fully operating network is set. Available options: default: 'Fully operating network', tor: 'Route network traffic via TOR', simulated: 'Simulate network traffic'"
+          description: "Network settings, by the default, fully operating network is set.
+            Available options: default: 'Fully operating network', tor: 'Route
+            network traffic via TOR', simulated: 'Simulate network traffic'"
           required: false
           isArray: false
           defaultValue: ""
@@ -255,14 +260,16 @@ script:
             - tor
             - simulated
         - name: email
-          description: Optional E-Mail address that may be associated with the submission for notification
+          description: Optional E-Mail address that may be associated with the submission
+            for notification
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: comment
-          description: "Optional comment text that may be associated with the submission/sample (Note: you can use #tags here)"
+          description: "Optional comment text that may be associated with the
+            submission/sample (Note: you can use #tags here)"
           required: false
           isArray: false
           defaultValue: ""
@@ -290,31 +297,34 @@ script:
           predefined:
             - ""
         - name: priority
-          description: 'Optional priority value between 1 (lowest) and 10 (highest), by default all samples run with highest priority'
+          description: Optional priority value between 1 (lowest) and 10 (highest), by
+            default all samples run with highest priority
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - '1'
-            - '2'
-            - '3'
-            - '4'
-            - '5'
-            - '6'
-            - '7'
-            - '8'
-            - '9'
-            - '10'
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+            - "5"
+            - "6"
+            - "7"
+            - "8"
+            - "9"
+            - "10"
         - name: document_password
-          description: "Optional document password that will be used to fill-in Adobe/Office password prompts"
+          description: Optional document password that will be used to fill-in
+            Adobe/Office password prompts
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: environment_variable
-          description: "Optional system environment value. The value is provided in the format: name=value"
+          description: "Optional system environment value. The value is provided in the
+            format: name=value"
           required: false
           isArray: false
           defaultValue: ""
@@ -387,7 +397,7 @@ script:
           required: false
           isArray: false
           defaultValue: ""
-          predefined: 
+          predefined:
             - ""
         - name: vx_family
           description: AV Family Substring e.g. nemucod
@@ -480,7 +490,55 @@ script:
           defaultValue: ""
           predefined:
             - ""
-      outputs: []
+      outputs:
+        - contextPath: CrowdStrike.Search.search_terms.id
+          description: ""
+          type: String
+        - contextPath: CrowdStrike.Search.search_terms.value
+          description: ""
+          type: String
+        - contextPath: CrowdStrike.Search.count
+          description: ""
+          type: Number
+        - contextPath: CrowdStrike.Search.result.verdict
+          description: ""
+          type: String
+        - contextPath: CrowdStrike.Search.result.av_detect
+          description: ""
+          type: String
+        - contextPath: CrowdStrike.Search.result.threat_score
+          description: ""
+          type: Unknown
+        - contextPath: CrowdStrike.Search.result.vx_family
+          description: ""
+          type: String
+        - contextPath: CrowdStrike.Search.result.job_id
+          description: ""
+          type: String
+        - contextPath: CrowdStrike.Search.result.sha256
+          description: ""
+          type: String
+        - contextPath: CrowdStrike.Search.result.environment_id
+          description: ""
+          type: Unknown
+        - contextPath: CrowdStrike.Search.result.analysis_start_time
+          description: ""
+          type: Date
+        - contextPath: CrowdStrike.Search.result.submit_name
+          description: ""
+          type: String
+        - contextPath: CrowdStrike.Search.result.environment_description
+          description: ""
+          type: String
+        - contextPath: CrowdStrike.Search.result.size
+          description: ""
+          type: Number
+        - contextPath: CrowdStrike.Search.result.type
+          description: ""
+          type: Unknown
+        - contextPath: CrowdStrike.Search.result.type_short
+          description: ""
+          type: String
     - name: cs-falcon-sandbox-result
       polling: true
       description: Retrieve result data upon a file. NOTE - This command returns a file
@@ -493,8 +551,8 @@ script:
           defaultValue: true
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: file
           description: File hash (MD5, SHA1 or SHA256)
           required: false
@@ -548,43 +606,48 @@ script:
           predefined:
             - ""
         - name: environmentID
-          description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu 16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64 bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32 bit"'
+          description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu
+            16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
+            bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32
+            bit"'
           required: true
           isArray: false
           auto: PREDEFINED
           defaultValue: ""
           predefined:
             - "100"
-            - '110'
-            - '120'
-            - '200'
-            - '300'
+            - "110"
+            - "120"
+            - "200"
+            - "300"
         - name: no_share_third_party
-          description: "When set to 'true', the sample is never shared with any third party." 
+          description: When set to 'true', the sample is never shared with any third party.
           required: false
           isArray: false
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: no_hash_lookup
-          description: "When set to 'true', the sample is never shared with any third party." 
+          description: When set to 'true', the sample is never shared with any third party.
           required: false
           isArray: false
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: allow_community_access
-          description: "When set to 'true', the sample will be available for the community."
+          description: When set to 'true', the sample will be available for the community.
           required: false
           isArray: false
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: action_script
-          description: "Optional custom runtime action script. Available runtime scripts: default, default_maxantievasion, default_randomfiles, default_randomtheme, default_openie"
+          description: "Optional custom runtime action script. Available runtime scripts:
+            default, default_maxantievasion, default_randomfiles,
+            default_randomtheme, default_openie"
           required: false
           isArray: false
           auto: PREDEFINED
@@ -596,41 +659,47 @@ script:
             - default_randomtheme
             - default_openie
         - name: hybrid_analysis
-          description: When set to 'false', no memory dumps or memory dump analysis will take place.
+          description: When set to 'false', no memory dumps or memory dump analysis will
+            take place.
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: experimental_anti_evasion
-          description: "When set to 'true', will set all experimental anti-evasion options of the Kernelmode Monitor."
+          description: When set to 'true', will set all experimental anti-evasion options
+            of the Kernelmode Monitor.
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: script_logging
-          description: "When set to 'true', will set the in-depth script logging engine of the Kernelmode Monitor."
+          description: When set to 'true', will set the in-depth script logging engine of
+            the Kernelmode Monitor.
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: input_sample_tampering
-          description: "When set to 'true', will allow experimental anti-evasion options of the Kernelmode Monitor that tamper with the input sample."
+          description: When set to 'true', will allow experimental anti-evasion options of
+            the Kernelmode Monitor that tamper with the input sample.
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: network_settings
-          description: "Network settings, by the default, fully operating network is set. Available options: default: 'Fully operating network', tor: 'Route network traffic via TOR', simulated: 'Simulate network traffic'"
+          description: "Network settings, by the default, fully operating network is set.
+            Available options: default: 'Fully operating network', tor: 'Route
+            network traffic via TOR', simulated: 'Simulate network traffic'"
           required: false
           isArray: false
           defaultValue: ""
@@ -640,14 +709,16 @@ script:
             - tor
             - simulated
         - name: email
-          description: Optional E-Mail address that may be associated with the submission for notification
+          description: Optional E-Mail address that may be associated with the submission
+            for notification
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: comment
-          description: "Optional comment text that may be associated with the submission/sample (Note: you can use #tags here)"
+          description: "Optional comment text that may be associated with the
+            submission/sample (Note: you can use #tags here)"
           required: false
           isArray: false
           defaultValue: ""
@@ -675,31 +746,34 @@ script:
           predefined:
             - ""
         - name: priority
-          description: 'Optional priority value between 1 (lowest) and 10 (highest), by default all samples run with highest priority'
+          description: Optional priority value between 1 (lowest) and 10 (highest), by
+            default all samples run with highest priority
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - '1'
-            - '2'
-            - '3'
-            - '4'
-            - '5'
-            - '6'
-            - '7'
-            - '8'
-            - '9'
-            - '10'
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+            - "5"
+            - "6"
+            - "7"
+            - "8"
+            - "9"
+            - "10"
         - name: document_password
-          description: "Optional document password that will be used to fill-in Adobe/Office password prompts"
+          description: Optional document password that will be used to fill-in
+            Adobe/Office password prompts
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: environment_variable
-          description: "Optional system environment value. The value is provided in the format: name=value"
+          description: "Optional system environment value. The value is provided in the
+            format: name=value"
           required: false
           isArray: false
           defaultValue: ""
@@ -718,43 +792,48 @@ script:
           predefined:
             - ""
         - name: environmentID
-          description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu 16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64 bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32 bit"'
+          description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu
+            16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
+            bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32
+            bit"'
           required: true
           isArray: false
           auto: PREDEFINED
           defaultValue: ""
           predefined:
             - "100"
-            - '110'
-            - '120'
-            - '200'
-            - '300'
+            - "110"
+            - "120"
+            - "200"
+            - "300"
         - name: no_share_third_party
-          description: "When set to 'true', the sample is never shared with any third party." 
+          description: When set to 'true', the sample is never shared with any third party.
           required: false
           isArray: false
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: no_hash_lookup
-          description: "When set to 'true', the sample is never shared with any third party." 
+          description: When set to 'true', the sample is never shared with any third party.
           required: false
           isArray: false
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: allow_community_access
-          description: "When set to 'true', the sample will be available for the community."
+          description: When set to 'true', the sample will be available for the community.
           required: false
           isArray: false
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: action_script
-          description: "Optional custom runtime action script. Available runtime scripts: default, default_maxantievasion, default_randomfiles, default_randomtheme, default_openie"
+          description: "Optional custom runtime action script. Available runtime scripts:
+            default, default_maxantievasion, default_randomfiles,
+            default_randomtheme, default_openie"
           required: false
           isArray: false
           auto: PREDEFINED
@@ -766,41 +845,47 @@ script:
             - default_randomtheme
             - default_openie
         - name: hybrid_analysis
-          description: When set to 'false', no memory dumps or memory dump analysis will take place.
+          description: When set to 'false', no memory dumps or memory dump analysis will
+            take place.
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: experimental_anti_evasion
-          description: "When set to 'true', will set all experimental anti-evasion options of the Kernelmode Monitor."
+          description: When set to 'true', will set all experimental anti-evasion options
+            of the Kernelmode Monitor.
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: script_logging
-          description: "When set to 'true', will set the in-depth script logging engine of the Kernelmode Monitor."
+          description: When set to 'true', will set the in-depth script logging engine of
+            the Kernelmode Monitor.
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: input_sample_tampering
-          description: "When set to 'true', will allow experimental anti-evasion options of the Kernelmode Monitor that tamper with the input sample."
+          description: When set to 'true', will allow experimental anti-evasion options of
+            the Kernelmode Monitor that tamper with the input sample.
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: network_settings
-          description: "Network settings, by the default, fully operating network is set. Available options: default: 'Fully operating network', tor: 'Route network traffic via TOR', simulated: 'Simulate network traffic'"
+          description: "Network settings, by the default, fully operating network is set.
+            Available options: default: 'Fully operating network', tor: 'Route
+            network traffic via TOR', simulated: 'Simulate network traffic'"
           required: false
           isArray: false
           defaultValue: ""
@@ -810,14 +895,16 @@ script:
             - tor
             - simulated
         - name: email
-          description: Optional E-Mail address that may be associated with the submission for notification
+          description: Optional E-Mail address that may be associated with the submission
+            for notification
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: comment
-          description: "Optional comment text that may be associated with the submission/sample (Note: you can use #tags here)"
+          description: "Optional comment text that may be associated with the
+            submission/sample (Note: you can use #tags here)"
           required: false
           isArray: false
           defaultValue: ""
@@ -845,31 +932,34 @@ script:
           predefined:
             - ""
         - name: priority
-          description: 'Optional priority value between 1 (lowest) and 10 (highest), by default all samples run with highest priority'
+          description: Optional priority value between 1 (lowest) and 10 (highest), by
+            default all samples run with highest priority
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - '1'
-            - '2'
-            - '3'
-            - '4'
-            - '5'
-            - '6'
-            - '7'
-            - '8'
-            - '9'
-            - '10'
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+            - "5"
+            - "6"
+            - "7"
+            - "8"
+            - "9"
+            - "10"
         - name: document_password
-          description: "Optional document password that will be used to fill-in Adobe/Office password prompts"
+          description: Optional document password that will be used to fill-in
+            Adobe/Office password prompts
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: environment_variable
-          description: "Optional system environment value. The value is provided in the format: name=value"
+          description: "Optional system environment value. The value is provided in the
+            format: name=value"
           required: false
           isArray: false
           defaultValue: ""
@@ -906,7 +996,7 @@ script:
       description: (Deprecated - Please use CrowdStrike Falcon Sandbox - Detonate URL
         playbook instead) Detonates URL address through Falcon Sandbox
         (supported only in v2)
-      polling: true  
+      polling: true
       deprecated: false
       arguments:
         - name: url
@@ -917,43 +1007,48 @@ script:
           predefined:
             - ""
         - name: environmentID
-          description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu 16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64 bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32 bit"'
+          description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu
+            16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
+            bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32
+            bit"'
           required: true
           isArray: false
           auto: PREDEFINED
           defaultValue: ""
           predefined:
             - "100"
-            - '110'
-            - '120'
-            - '200'
-            - '300'
+            - "110"
+            - "120"
+            - "200"
+            - "300"
         - name: no_share_third_party
-          description: "When set to 'true', the sample is never shared with any third party." 
+          description: When set to 'true', the sample is never shared with any third party.
           required: false
           isArray: false
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: no_hash_lookup
-          description: "When set to 'true', the sample is never shared with any third party." 
+          description: When set to 'true', the sample is never shared with any third party.
           required: false
           isArray: false
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: allow_community_access
-          description: "When set to 'true', the sample will be available for the community."
+          description: When set to 'true', the sample will be available for the community.
           required: false
           isArray: false
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: action_script
-          description: "Optional custom runtime action script. Available runtime scripts: default, default_maxantievasion, default_randomfiles, default_randomtheme, default_openie"
+          description: "Optional custom runtime action script. Available runtime scripts:
+            default, default_maxantievasion, default_randomfiles,
+            default_randomtheme, default_openie"
           required: false
           isArray: false
           auto: PREDEFINED
@@ -965,41 +1060,47 @@ script:
             - default_randomtheme
             - default_openie
         - name: hybrid_analysis
-          description: When set to 'false', no memory dumps or memory dump analysis will take place.
+          description: When set to 'false', no memory dumps or memory dump analysis will
+            take place.
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: experimental_anti_evasion
-          description: "When set to 'true', will set all experimental anti-evasion options of the Kernelmode Monitor."
+          description: When set to 'true', will set all experimental anti-evasion options
+            of the Kernelmode Monitor.
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: script_logging
-          description: "When set to 'true', will set the in-depth script logging engine of the Kernelmode Monitor."
+          description: When set to 'true', will set the in-depth script logging engine of
+            the Kernelmode Monitor.
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: input_sample_tampering
-          description: "When set to 'true', will allow experimental anti-evasion options of the Kernelmode Monitor that tamper with the input sample."
+          description: When set to 'true', will allow experimental anti-evasion options of
+            the Kernelmode Monitor that tamper with the input sample.
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - 'true'
-            - 'false'
+            - "true"
+            - "false"
         - name: network_settings
-          description: "Network settings, by the default, fully operating network is set. Available options: default: 'Fully operating network', tor: 'Route network traffic via TOR', simulated: 'Simulate network traffic'"
+          description: "Network settings, by the default, fully operating network is set.
+            Available options: default: 'Fully operating network', tor: 'Route
+            network traffic via TOR', simulated: 'Simulate network traffic'"
           required: false
           isArray: false
           defaultValue: ""
@@ -1009,14 +1110,16 @@ script:
             - tor
             - simulated
         - name: email
-          description: Optional E-Mail address that may be associated with the submission for notification
+          description: Optional E-Mail address that may be associated with the submission
+            for notification
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: comment
-          description: "Optional comment text that may be associated with the submission/sample (Note: you can use #tags here)"
+          description: "Optional comment text that may be associated with the
+            submission/sample (Note: you can use #tags here)"
           required: false
           isArray: false
           defaultValue: ""
@@ -1044,31 +1147,34 @@ script:
           predefined:
             - ""
         - name: priority
-          description: 'Optional priority value between 1 (lowest) and 10 (highest), by default all samples run with highest priority'
+          description: Optional priority value between 1 (lowest) and 10 (highest), by
+            default all samples run with highest priority
           required: false
           isArray: false
           defaultValue: ""
           auto: PREDEFINED
           predefined:
-            - '1'
-            - '2'
-            - '3'
-            - '4'
-            - '5'
-            - '6'
-            - '7'
-            - '8'
-            - '9'
-            - '10'
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+            - "5"
+            - "6"
+            - "7"
+            - "8"
+            - "9"
+            - "10"
         - name: document_password
-          description: "Optional document password that will be used to fill-in Adobe/Office password prompts"
+          description: Optional document password that will be used to fill-in
+            Adobe/Office password prompts
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: environment_variable
-          description: "Optional system environment value. The value is provided in the format: name=value"
+          description: "Optional system environment value. The value is provided in the
+            format: name=value"
           required: false
           isArray: false
           defaultValue: ""
@@ -1087,113 +1193,118 @@ script:
           predefined:
             - ""
       outputs:
-      - contextPath: Crowdstrike.AnalysisOverview.sha256
-        description: 'SHA256 of the file'
-        type: String
-      - contextPath: Crowdstrike.AnalysisOverview.last_file_name
-        description: ''
-        type: String
-      - contextPath: Crowdstrike.AnalysisOverview.threat_score
-        description: ''
-        type: Unknown
-      - contextPath: Crowdstrike.AnalysisOverview.verdict
-        description: ''
-        type: String
-      - contextPath: Crowdstrike.AnalysisOverview.url_analysis
-        description: ''
-        type: Boolean
-      - contextPath: Crowdstrike.AnalysisOverview.size
-        description: ''
-        type: Number
-      - contextPath: Crowdstrike.AnalysisOverview.type
-        description: ''
-        type: String
-      - contextPath: Crowdstrike.AnalysisOverview.type_short
-        description: ''
-        type: String
-      - contextPath: Crowdstrike.AnalysisOverview.analysis_start_time
-        description: ''
-        type: Unknown
-      - contextPath: Crowdstrike.AnalysisOverview.last_multi_scan
-        description: ''
-        type: Date
-      - contextPath: Crowdstrike.AnalysisOverview.architecture
-        description: ''
-        type: Unknown
-      - contextPath: Crowdstrike.AnalysisOverview.multiscan_result
-        description: ''
-        type: Number
-      - contextPath: Crowdstrike.AnalysisOverview.scanners.name
-        description: ''
-        type: String
-      - contextPath: Crowdstrike.AnalysisOverview.scanners.status
-        description: ''
-        type: String
-      - contextPath: Crowdstrike.AnalysisOverview.scanners.error_message
-        description: ''
-        type: Unknown
-      - contextPath: Crowdstrike.AnalysisOverview.scanners.progress
-        description: ''
-        type: Number
-      - contextPath: Crowdstrike.AnalysisOverview.scanners.total
-        description: ''
-        type: Number
-      - contextPath: Crowdstrike.AnalysisOverview.scanners.positives
-        description: ''
-        type: Number
-      - contextPath: Crowdstrike.AnalysisOverview.scanners.percent
-        description: ''
-        type: Number
-      - contextPath: Crowdstrike.AnalysisOverview.scanners.anti_virus_results.name
-        description: ''
-        type: String
-      - contextPath: Crowdstrike.AnalysisOverview.scanners.anti_virus_results.result
-        description: ''
-        type: Boolean
-      - contextPath: Crowdstrike.AnalysisOverview.scanners.anti_virus_results.threat_found
-        description: ''
-        type: String
-      - contextPath: Crowdstrike.AnalysisOverview.reports
-        description: ''
-        type: String
-      - contextPath: Crowdstrike.AnalysisOverview.whitelisted
-        description: ''
-        type: Boolean
-      - contextPath: Crowdstrike.AnalysisOverview.children_in_queue
-        description: ''
-        type: Number
-      - contextPath: Crowdstrike.AnalysisOverview.children_in_progress
-        description: ''
-        type: Number
-      - contextPath: File.Size
-        description: ''
-        type: number
-      - contextPath: File.SHA1
-        description: ''
-        type: string
-      - contextPath: File.SHA256
-        description: ''
-        type: string
-      - contextPath: File.Name
-        description: ''
-        type: string
-      - contextPath: File.SSDeep
-        description: ''
-        type: string
-      - contextPath: File.Type
-        description: ''
-        type: string
-      - contextPath: DBotScore.Indicator
-        description: The indicator that was tested.
-        type: string
-      - contextPath: DBotScore.Score
-        description: The actual score.
-        type: number
-      - contextPath: DBotScore.Type
-        description: The indicator type.
-        type: string
-      - contextPath: DBotScore.Vendor
-        description: The vendor used to calculate the score.
+        - contextPath: Crowdstrike.AnalysisOverview.sha256
+          description: SHA256 of the file
+          type: String
+        - contextPath: Crowdstrike.AnalysisOverview.last_file_name
+          description: ""
+          type: String
+        - contextPath: Crowdstrike.AnalysisOverview.threat_score
+          description: ""
+          type: Unknown
+        - contextPath: Crowdstrike.AnalysisOverview.verdict
+          description: ""
+          type: String
+        - contextPath: Crowdstrike.AnalysisOverview.url_analysis
+          description: ""
+          type: Boolean
+        - contextPath: Crowdstrike.AnalysisOverview.size
+          description: ""
+          type: Number
+        - contextPath: Crowdstrike.AnalysisOverview.type
+          description: ""
+          type: String
+        - contextPath: Crowdstrike.AnalysisOverview.type_short
+          description: ""
+          type: String
+        - contextPath: Crowdstrike.AnalysisOverview.analysis_start_time
+          description: ""
+          type: Unknown
+        - contextPath: Crowdstrike.AnalysisOverview.last_multi_scan
+          description: ""
+          type: Date
+        - contextPath: Crowdstrike.AnalysisOverview.architecture
+          description: ""
+          type: Unknown
+        - contextPath: Crowdstrike.AnalysisOverview.multiscan_result
+          description: ""
+          type: Number
+        - contextPath: Crowdstrike.AnalysisOverview.scanners.name
+          description: ""
+          type: String
+        - contextPath: Crowdstrike.AnalysisOverview.scanners.status
+          description: ""
+          type: String
+        - contextPath: Crowdstrike.AnalysisOverview.scanners.error_message
+          description: ""
+          type: Unknown
+        - contextPath: Crowdstrike.AnalysisOverview.scanners.progress
+          description: ""
+          type: Number
+        - contextPath: Crowdstrike.AnalysisOverview.scanners.total
+          description: ""
+          type: Number
+        - contextPath: Crowdstrike.AnalysisOverview.scanners.positives
+          description: ""
+          type: Number
+        - contextPath: Crowdstrike.AnalysisOverview.scanners.percent
+          description: ""
+          type: Number
+        - contextPath: Crowdstrike.AnalysisOverview.scanners.anti_virus_results.name
+          description: ""
+          type: String
+        - contextPath: Crowdstrike.AnalysisOverview.scanners.anti_virus_results.result
+          description: ""
+          type: Boolean
+        - contextPath: Crowdstrike.AnalysisOverview.scanners.anti_virus_results.threat_found
+          description: ""
+          type: String
+        - contextPath: Crowdstrike.AnalysisOverview.reports
+          description: ""
+          type: String
+        - contextPath: Crowdstrike.AnalysisOverview.whitelisted
+          description: ""
+          type: Boolean
+        - contextPath: Crowdstrike.AnalysisOverview.children_in_queue
+          description: ""
+          type: Number
+        - contextPath: Crowdstrike.AnalysisOverview.children_in_progress
+          description: ""
+          type: Number
+        - contextPath: File.Size
+          description: ""
+          type: number
+        - contextPath: File.SHA1
+          description: ""
+          type: string
+        - contextPath: File.SHA256
+          description: ""
+          type: string
+        - contextPath: File.Name
+          description: ""
+          type: string
+        - contextPath: File.SSDeep
+          description: ""
+          type: string
+        - contextPath: File.Type
+          description: ""
+          type: string
+        - contextPath: File.Malicious.Vendor
+          description: or malicious files, the vendor that made the decision
+          type: string
+        - contextPath: File.Malicious.Description
+          description: For malicious files, the reason for the vendor to make the decision
+        - contextPath: DBotScore.Indicator
+          description: The indicator that was tested.
+          type: string
+        - contextPath: DBotScore.Score
+          description: The actual score.
+          type: number
+        - contextPath: DBotScore.Type
+          description: The indicator type.
+          type: string
+        - contextPath: DBotScore.Vendor
+          description: The vendor used to calculate the score.
     - name: cs-falcon-sandbox-analysis-overview-summary
       description: return overview for hash
       deprecated: false
@@ -1234,6 +1345,32 @@ script:
         - name: file
           description: The sha256 hash of a file
           required: true
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+      outputs: []
+    - name: cs-falcon-sandbox-report-state
+      description: description
+      deprecated: false
+      arguments:
+        - name: JobID
+          description: description
+          required: false
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+        - name: environmentID
+          description: description
+          required: false
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+        - name: file
+          description: description
+          required: false
           isArray: false
           defaultValue: ""
           predefined:

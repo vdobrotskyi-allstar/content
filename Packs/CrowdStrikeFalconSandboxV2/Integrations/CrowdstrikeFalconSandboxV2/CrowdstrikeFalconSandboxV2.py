@@ -90,7 +90,7 @@ def translate_verdict(param: str):
         'NoVerdict': 2,
         'NoSpecificThreat': 3,
         'Suspicious': 4,
-        'Malicious': 4
+        'Malicious': 5 #TODO different than v1 but acc to docs...
     }[param]
 
 
@@ -297,7 +297,7 @@ def file_with_bwc_fields(res):
                        malware_family=res['vx_family'],
                        dbot_score=get_dbot_score(res['sha256'], res['threat_score']))
 
-    file.__dict__ |= map_dict_keys(res.__dict__, {
+    file.__dict__ .update( map_dict_keys(res, {
         'sha1': 'SHA1',
         'sha256': 'SHA256',
         'md5': 'MD5',
@@ -308,7 +308,7 @@ def file_with_bwc_fields(res):
         'submit_name': 'submitname',
         ' url_analysis': 'isurlanalysis',
         'interesting:': 'isinteresting',
-        'vx_family': 'family'}, False)
+        'vx_family': 'family'}, False))
     return file
 
 
@@ -393,6 +393,12 @@ def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, C
 
         return lambda: not has_error_state(client, key), error_response
 
+def crowdstrike_report_state_command(client: Client, args):
+    key = get_api_id(args)
+    state = client.get_state(key)
+    return CommandResults(raw_response=state,readable_output= tableToMarkdown("State",state,
+                                                                              headerTransform=lambda x: #todo add real implementation to base?
+                                                                              pascalToSpace(underscoreToCamelCase(x))))
 
 def crowdstrike_get_environments_command(client: Client, _):
     environments = client.get_environments()
@@ -477,7 +483,8 @@ def main() -> None:
             crowdstrike_submit_url_command: ['cs-falcon-sandbox-submit-url', 'crowdstrike-submit-url'],
             crowdstrike_detonate_url_command: ['cs-falcon-sandbox-detonate-url'],
             crowdstrike_detonate_file_command: ['cs-falcon-sandbox-detonate-file'],
-            crowdstrike_sample_download_command: ['cs-falcon-sandbox-sample-download']
+            crowdstrike_sample_download_command: ['cs-falcon-sandbox-sample-download'],
+            crowdstrike_report_state_command : ['cs-falcon-sandbox-report-state']
         }
         commands_dict = {}
         for command in backwards_dictionary:
