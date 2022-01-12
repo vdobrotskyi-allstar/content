@@ -68,7 +68,7 @@ class Client(BaseClient):
         return self._http_request(method='GET', url_suffix=f'/report/{key}/state')
 
     def submit_url(self, url, params: Dict[str, Any]):
-        return self._http_request(method='POST', data={'url': urllib.parse.quote(url), **params},
+        return self._http_request(method='POST', data={'url': url, **params},
                                   url_suffix='/submit/url')
 
     def submit_file(self, file_contents, params: Dict[str, Any]):
@@ -90,7 +90,7 @@ def translate_verdict(param: str):
         'NoVerdict': 2,
         'NoSpecificThreat': 3,
         'Suspicious': 4,
-        'Malicious': 5 #TODO different than v1 but acc to docs...
+        'Malicious': 5  # TODO different than v1 but acc to docs...
     }[param]
 
 
@@ -160,7 +160,6 @@ def poll(name, interval=30, timeout=600):  # todo move to base?
 
     def dec(func):
         def inner(client, args):
-            demisto.debug('args:' + str(args))
             if args.get('Polling'):
                 ScheduledCommand.raise_error_if_not_supported()
                 continue_poll_provider, result = func(client, args)
@@ -219,17 +218,19 @@ def get_submission_arguments(args) -> Dict[str, Any]:
     return {camel_case_to_underscore(arg): args[arg] for arg in SUBMISSION_PARAMETERS if args.get(arg)}
 
 
-def submission_response(response):
-    return CommandResults(outputs_prefix='Crowdstrike.Submit', outputs_key_field='sha256', raw_response=response)
+def submission_response(client, response, polling):
+    submission_res = CommandResults(outputs_prefix='Crowdstrike.Submit', outputs_key_field='submission_id',
+                                    raw_response=response, readable_output=
+                                    tableToMarkdown("Submission Data:", response, headerTransform=underscore_to_space))
+    if not polling:
+        return submission_res
+    else:
+        return_results(submission_res) #return early
+    return crowdstrike_scan_command(client, {'file': response['sha256'], 'JobID': response['job_id'],
+                                             "Polling": True})
 
 
-def detonate_response(client, response):
-    return [submission_response(response), crowdstrike_scan_command(client,
-                                                                    {'file': response['sha256'],
-                                                                     'JobID': response['job_id'], "Polling": True})]
-
-
-def crowdstrike_submit_sample_command(client: Client, args):
+def crowdstrike_submit_sample(client: Client, args):
     file_contents = demisto.getFilePath(
         args['entryId'])  # is this a generic error when not found? Seems obscure. Add try except?
     submission_args = get_submission_arguments(args)
@@ -243,19 +244,11 @@ def crowdstrike_submit_url(client: Client, args):
 
 
 def crowdstrike_submit_url_command(client: Client, args):
-    return submission_response(crowdstrike_submit_url(client, args))
+    return submission_response(client, crowdstrike_submit_url(client, args), args.get('Polling'))
 
 
-def crowdstrike_submit_sample(client: Client, args):
-    return submission_response(crowdstrike_submit_sample_command(client, args))
-
-
-def crowdstrike_detonate_url_command(client: Client, args):
-    return detonate_response(crowdstrike_submit_url(client, args))
-
-
-def crowdstrike_detonate_file_command(client: Client, args):
-    return detonate_response(crowdstrike_submit_sample(client, args))
+def crowdstrike_submit_sample_command(client: Client, args):
+    return submission_response(client, crowdstrike_submit_sample(client, args), args.get('Polling'))
 
 
 def crowdstrike_analysis_overview_command(client: Client, args):
@@ -297,7 +290,7 @@ def file_with_bwc_fields(res):
                        malware_family=res['vx_family'],
                        dbot_score=get_dbot_score(res['sha256'], res['threat_score']))
 
-    file.__dict__ .update( map_dict_keys(res, {
+    file.__dict__.update(map_dict_keys(res, {
         'sha1': 'SHA1',
         'sha256': 'SHA256',
         'md5': 'MD5',
@@ -393,12 +386,17 @@ def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, C
 
         return lambda: not has_error_state(client, key), error_response
 
+
+def underscore_to_space(x):
+    return pascalToSpace(underscoreToCamelCase(x))  # todo make better implementation in base?
+
+
 def crowdstrike_report_state_command(client: Client, args):
     key = get_api_id(args)
     state = client.get_state(key)
-    return CommandResults(raw_response=state,readable_output= tableToMarkdown("State",state,
-                                                                              headerTransform=lambda x: #todo add real implementation to base?
-                                                                              pascalToSpace(underscoreToCamelCase(x))))
+    return CommandResults(raw_response=state, readable_output=tableToMarkdown("State", state,
+                                                                              headerTransform=underscore_to_space))
+
 
 def crowdstrike_get_environments_command(client: Client, _):
     environments = client.get_environments()
@@ -481,10 +479,8 @@ def main() -> None:
             crowdstrike_analysis_overview_refresh_command: ['cs-falcon-sandbox-analysis-overview-refresh'],
             crowdstrike_submit_sample_command: ['crowdstrike-submit-sample', 'cs-falcon-sandbox-submit-sample'],
             crowdstrike_submit_url_command: ['cs-falcon-sandbox-submit-url', 'crowdstrike-submit-url'],
-            crowdstrike_detonate_url_command: ['cs-falcon-sandbox-detonate-url'],
-            crowdstrike_detonate_file_command: ['cs-falcon-sandbox-detonate-file'],
             crowdstrike_sample_download_command: ['cs-falcon-sandbox-sample-download'],
-            crowdstrike_report_state_command : ['cs-falcon-sandbox-report-state']
+            crowdstrike_report_state_command: ['cs-falcon-sandbox-report-state']
         }
         commands_dict = {}
         for command in backwards_dictionary:
