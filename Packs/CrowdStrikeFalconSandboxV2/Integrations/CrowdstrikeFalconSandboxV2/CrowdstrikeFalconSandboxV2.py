@@ -225,14 +225,14 @@ def submission_response(client, response, polling):
     if not polling:
         return submission_res
     else:
-        return_results(submission_res) #return early
+        return_results(submission_res)  # return early
     return crowdstrike_scan_command(client, {'file': response['sha256'], 'JobID': response['job_id'],
                                              "Polling": True})
 
 
 def crowdstrike_submit_sample(client: Client, args):
-    file_contents = demisto.getFilePath(
-        args['entryId'])  # is this a generic error when not found? Seems obscure. Add try except?
+    file_contents = demisto.getFilePath(args['entryId'])
+    # TODO is this a generic error when not found? Seems obscure. Add try except?
     submission_args = get_submission_arguments(args)
     return client.submit_file(file_contents, submission_args)
 
@@ -288,7 +288,7 @@ def file_with_bwc_fields(res):
     file = Common.File(size=res['size'], file_type=res['type'], sha1=res['sha1'], sha256=res['sha256'], md5=res['md5'],
                        sha512=res['sha512'], name=res['submit_name'], ssdeep=res['ssdeep'],
                        malware_family=res['vx_family'],
-                       dbot_score=get_dbot_score(res['sha256'], res['threat_score']))
+                       dbot_score=get_dbot_score(res['sha256'], res['threat_level']))
 
     file.__dict__.update(map_dict_keys(res, {
         'sha1': 'SHA1',
@@ -387,7 +387,7 @@ def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, C
         return lambda: not has_error_state(client, key), error_response
 
 
-def underscore_to_space(x):
+def underscore_to_space(x: str):
     return pascalToSpace(underscoreToCamelCase(x))  # todo make better implementation in base?
 
 
