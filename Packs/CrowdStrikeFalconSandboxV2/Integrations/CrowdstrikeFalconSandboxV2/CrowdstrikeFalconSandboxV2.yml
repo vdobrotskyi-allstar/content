@@ -707,7 +707,160 @@ script:
             - misp-json
             - openioc
             - ""
-      outputs: []
+      outputs:
+        - contextPath: CrowdStrike.Report.job_id
+          description: ''
+          type: Unknown
+        - contextPath: CrowdStrike.Report.environment_id
+          description: ''
+          type: Unknown
+        - contextPath: CrowdStrike.Report.environment_description
+          description: ''
+          type: String
+        - contextPath: CrowdStrike.Report.size
+          description: ''
+          type: Number
+        - contextPath: CrowdStrike.Report.type
+          description: ''
+          type: String
+        - contextPath: CrowdStrike.Report.type_short
+          description: ''
+          type: String
+        - contextPath: CrowdStrike.Report.target_url
+          description: ''
+          type: Unknown
+        - contextPath: CrowdStrike.Report.state
+          description: ''
+          type: String
+        - contextPath: CrowdStrike.Report.error_type
+          description: ''
+          type: Unknown
+        - contextPath: CrowdStrike.Report.error_origin
+          description: ''
+          type: Unknown
+        - contextPath: CrowdStrike.Report.submit_name
+          description: ''
+          type: String
+        - contextPath: CrowdStrike.Report.md5
+          description: ''
+          type: String
+        - contextPath: CrowdStrike.Report.sha1
+          description: ''
+          type: String
+        - contextPath: CrowdStrike.Report.sha256
+          description: ''
+          type: String
+        - contextPath: CrowdStrike.Report.sha512
+          description: ''
+          type: String
+        - contextPath: CrowdStrike.Report.ssdeep
+          description: ''
+          type: Unknown
+        - contextPath: CrowdStrike.Report.imphash
+          description: ''
+          type: Unknown
+        - contextPath: CrowdStrike.Report.av_detect
+          description: ''
+          type: Number
+        - contextPath: CrowdStrike.Report.vx_family
+          description: ''
+          type: String
+        - contextPath: CrowdStrike.Report.url_analysis
+          description: ''
+          type: Boolean
+        - contextPath: CrowdStrike.Report.analysis_start_time
+          description: ''
+          type: Date
+        - contextPath: CrowdStrike.Report.threat_score
+          description: ''
+          type: Unknown
+        - contextPath: CrowdStrike.Report.interesting
+          description: ''
+          type: Boolean
+        - contextPath: CrowdStrike.Report.threat_level
+          description: ''
+          type: Number
+        - contextPath: CrowdStrike.Report.verdict
+          description: ''
+          type: String
+        - contextPath: CrowdStrike.Report.total_network_connections
+          description: ''
+          type: Number
+        - contextPath: CrowdStrike.Report.total_processes
+          description: ''
+          type: Number
+        - contextPath: CrowdStrike.Report.total_signatures
+          description: ''
+          type: Number
+        - contextPath: CrowdStrike.Report.file_metadata
+          description: ''
+          type: Unknown
+        - contextPath: CrowdStrike.Report.submissions.submission_id
+          description: ''
+          type: String
+        - contextPath: CrowdStrike.Report.submissions.filename
+          description: ''
+          type: String
+        - contextPath: CrowdStrike.Report.submissions.url
+          description: ''
+          type: Unknown
+        - contextPath: CrowdStrike.Report.submissions.created_at
+          description: ''
+          type: Date
+        - contextPath: CrowdStrike.Report.network_mode
+          description: ''
+          type: String
+        - contextPath: File.SHA256
+          description: SHA256 of the file
+          type: string
+        - contextPath: File.SHA1
+          description: SHA1 of the file
+          type: string
+        - contextPath: File.MD5
+          description: MD5 of the file
+          type: string
+        - contextPath: File.Name
+          description: Submission name of the file
+          type: string
+        - contextPath: File.MalwareFamily
+          description: Family classification of the file
+          type: string
+        - contextPath: File.Malicious.Vendor
+          description: or malicious files, the vendor that made the decision
+          type: string
+        - contextPath: File.Malicious.Description
+          description: For malicious files, the reason for the vendor to make the decision
+          type: string
+        - contextPath: DBotScore.Indicator
+          description: The indicator we tested
+          type: string
+        - contextPath: DBotScore.Type
+          description: The type of the indicator
+          type: string
+        - contextPath: DBotScore.Vendor
+          description: Vendor used to calculate the score
+          type: string
+        - contextPath: DBotScore.Score
+          description: The actual score
+          type: number
+        - contextPath: InfoFile.Name
+          description: File name.
+          type: string
+        - contextPath: InfoFile.EntryID
+          description: File entry ID.
+          type: string
+        - contextPath: InfoFile.Size
+          description: File size.
+          type: number
+        - contextPath: InfoFile.Type
+          description: File type, e.g., "PE".
+          type: string
+        - contextPath: InfoFile.Info
+          description: Basic information of the file.
+          type: string
+        - contextPath: InfoFile.Extension
+          description: File extension.
+          type: string
     - name: cs-falcon-sandbox-submit-url
       polling: true
       description: Submit a URL for analysis (Supported only in v2)

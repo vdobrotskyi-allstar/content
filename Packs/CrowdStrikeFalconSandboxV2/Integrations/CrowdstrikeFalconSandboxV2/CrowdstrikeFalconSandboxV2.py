@@ -291,22 +291,23 @@ def file_with_bwc_fields(res):
             for key in super_ret.keys():
                 if key.startswith("File"):
                     super_ret[key].update(map_dict_keys(res, {
-        'sha1': 'SHA1',
-        'sha256': 'SHA256',
-        'md5': 'MD5',
-        'job_id': 'JobID',
-        'environment_id': 'environmentId',
-        'threat_score': 'threatscore',
-        'environment_description': 'environmentDescription',
-        'submit_name': 'submitname',
-        ' url_analysis': 'isurlanalysis',
-        'interesting:': 'isinteresting',
-        'vx_family': 'family'}, False))
+                        'sha1': 'SHA1',
+                        'sha256': 'SHA256',
+                        'md5': 'MD5',
+                        'job_id': 'JobID',
+                        'environment_id': 'environmentId',
+                        'threat_score': 'threatscore',
+                        'environment_description': 'environmentDescription',
+                        'submit_name': 'submitname',
+                        ' url_analysis': 'isurlanalysis',
+                        'interesting:': 'isinteresting',
+                        'vx_family': 'family'}, False))
             return super_ret
+
     file = BWCFile(size=res['size'], file_type=res['type'], sha1=res['sha1'], sha256=res['sha256'], md5=res['md5'],
-                       sha512=res['sha512'], name=res['submit_name'], ssdeep=res['ssdeep'],
-                       malware_family=res['vx_family'],
-                       dbot_score=get_dbot_score(res['sha256'], res['threat_level']))
+                   sha512=res['sha512'], name=res['submit_name'], ssdeep=res['ssdeep'],
+                   malware_family=res['vx_family'],
+                   dbot_score=get_dbot_score(res['sha256'], res['threat_level']))
 
     return file
 
