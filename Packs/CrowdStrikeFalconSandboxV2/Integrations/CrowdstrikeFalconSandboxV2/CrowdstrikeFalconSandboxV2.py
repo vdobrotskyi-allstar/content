@@ -33,6 +33,7 @@ SUBMISSION_PARAMETERS = {'environmentID', 'no_share_third_party', 'allow_communi
                          'input_sample_tampering', 'network_settings', 'email', 'comment', 'custom_cmd_line',
                          'custom_run_time', 'submit_name', 'priority', 'document_password', 'environment_variable',
                          }
+INTEGRATION_RELIABILITY = ''
 
 
 class Client(BaseClient):
@@ -211,7 +212,9 @@ def get_dbot_score(filehash, raw_score: int):
 
     return Common.DBotScore(indicator=filehash, integration_name='CrowdStrike Falcon Sandbox V2',
                             indicator_type=DBotScoreType.FILE, score=calc_score(),
-                            malicious_description=f'Score of {calc_score()}')
+                            malicious_description=f'Score of {calc_score()}',
+                            reliability=DBotScoreReliability.get_dbot_score_reliability_from_str(
+                                INTEGRATION_RELIABILITY))
 
 
 def get_submission_arguments(args) -> Dict[str, Any]:
@@ -282,7 +285,7 @@ def crowdstrike_search_command(client: Client, args):
     def convert_to_file_res(res):
         return BWCFile(res, key_name_changes, False, size=res['size'], sha256=res['sha256'],
                        dbot_score=get_dbot_score(res['sha256']
-                                                 , res['threat_score']),
+                                                 , res['threat_score']),  # todo threatscore prob shouldnt be converted
                        extension=res['type_short'], name=res['submit_name'])
 
     return CommandResults(
@@ -468,7 +471,8 @@ def main() -> None:
     """
     params: Dict[str, Any] = demisto.params()
     args: Dict[str, Any] = demisto.args()
-
+    global INTEGRATION_RELIABILITY
+    INTEGRATION_RELIABILITY = params.get("integrationReliability")
     # if your Client class inherits from BaseClient, SSL verification is
     # handled out of the box by it, just pass ``verify_certificate`` to
     # the Client constructor
