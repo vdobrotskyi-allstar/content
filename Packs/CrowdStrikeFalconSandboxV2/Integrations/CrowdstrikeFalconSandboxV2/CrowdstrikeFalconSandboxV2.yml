@@ -74,7 +74,7 @@ script:
             - "false"
         - name: JobID
           deprecated: true
-          description: ""
+          description: JobID to retrieve scan results for
           required: false
           isArray: false
           defaultValue: false
@@ -610,6 +610,29 @@ script:
           predefined:
             - ""
       outputs:
+        - contextPath: File.SHA256
+          description: SHA256 of the file
+          type: string
+        - contextPath: File.Name
+          description: Submission name of the file
+          type: string
+        - contextPath: File.MalwareFamily
+          description: Family classification of the file
+          type: string
+        - contextPath: File.Malicious.Vendor
+          description: or malicious files, the vendor that made the decision
+          type: string
+        - contextPath: File.Malicious.Description
+          description: For malicious files, the reason for the vendor to make the decision
+        - contextPath: File.Size
+          description: ""
+          type: number
+        - contextPath: File.Extension
+          description: ""
+          type: string
+        - contextPath: File.MalwareFamily
+          description: The malware family associated with the file.
+          type: String
         - contextPath: CrowdStrike.Search.search_terms.id
           description: ""
           type: String
@@ -690,13 +713,20 @@ script:
             - "true"
             - "false"
         - name: environmentID
-          description: environment ID to submit file to(get all via
-            crowdstrike-get-environments)
-          required: false
+          description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu
+            16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
+            bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32
+            bit"'
+          required: true
           isArray: false
+          auto: PREDEFINED
           defaultValue: ""
           predefined:
-            - ""
+            - "100"
+            - "110"
+            - "120"
+            - "200"
+            - "300"
         - name: JobID
           description: Job ID of file to generate report for
           required: false
@@ -877,7 +907,7 @@ script:
           type: string
     - name: cs-falcon-sandbox-submit-url
       polling: true
-      description: Submit a URL for analysis (Supported only in v2)
+      description: Submit a URL for analysis
       deprecated: false
       arguments:
         - name: url
@@ -1083,12 +1113,20 @@ script:
           predefined:
             - ""
         - name: environmentID
-          description: description
-          required: false
+          description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu
+            16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
+            bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32
+            bit"'
+          required: true
           isArray: false
+          auto: PREDEFINED
           defaultValue: ""
           predefined:
-            - ""
+            - "100"
+            - "110"
+            - "120"
+            - "200"
+            - "300"
         - name: JobID
           description: description
           required: false
@@ -1278,12 +1316,20 @@ script:
           predefined:
             - ""
         - name: environmentID
-          description: description
-          required: false
+          description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu
+            16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
+            bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32
+            bit"'
+          required: true
           isArray: false
+          auto: PREDEFINED
           defaultValue: ""
           predefined:
-            - ""
+            - "100"
+            - "110"
+            - "120"
+            - "200"
+            - "300"
         - name: file
           description: description
           required: false

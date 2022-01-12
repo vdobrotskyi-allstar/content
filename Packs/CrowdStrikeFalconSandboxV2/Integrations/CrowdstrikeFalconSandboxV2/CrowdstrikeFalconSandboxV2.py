@@ -24,7 +24,6 @@ from typing import Dict, Any
 # Disable insecure warnings
 requests.packages.urllib3.disable_warnings()  # pylint: disable=no-member
 
-DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'  # ISO8601 format with UTC, default in XSOAR
 SEARCH_TERM_QUERY_ARGS = ('filename', 'filetype', 'filetype_desc', 'env_id', 'country', 'verdict', 'av_detect',
                           'vx_family', 'tag', 'date_from', 'date_to', 'port', 'host', 'domain', 'url', 'similiar_to',
                           'context', 'imp_hash', 'ssdeep', 'authentihash')
@@ -258,13 +257,19 @@ def crowdstrike_analysis_overview_command(client: Client, args):
     result = client.analysis_overview(args['file'])
     file = Common.File(sha256=result['sha256'], size=result['size'], file_type=result['type'],
                        dbot_score=get_dbot_score(args['file'], result['threat_score']))
+
+    table_cols = ["last_file_name", "threat_score", "other_file_name",'sha256', "verdict"
+        , "url_analysis", 'size', 'type', 'type_short']
+
     return CommandResults(
         outputs_prefix='CrowdStrike.AnalysisOverview',
         outputs_key_field='sha256',
         outputs=result,
         raw_response=result,
         indicator=file,
-        readable_output=tableToMarkdown("Analysis Overview:", result, removeNull=True)
+        readable_output=tableToMarkdown("Analysis Overview:", result, headers=table_cols,
+                                        headerTransform=underscore_to_space,
+                                        removeNull=True)
         # TODO what should be human readable
     )
 
@@ -286,7 +291,7 @@ def crowdstrike_search_command(client: Client, args):
         return BWCFile(res, key_name_changes, False, size=res['size'], sha256=res['sha256'],
                        dbot_score=get_dbot_score(res['sha256']
                                                  , res['threat_score']),  # todo threatscore prob shouldnt be converted
-                       extension=res['type_short'], name=res['submit_name'])
+                       extension=res['type_short'], name=res['submit_name'], malware_family=res['vx_family'])
 
     return CommandResults(
         raw_response=response,
@@ -382,7 +387,15 @@ def crowdstrike_analysis_overview_summary_command(client: Client, args):
         outputs_key_field='sha256',
         outputs=result,
         raw_response=result,
-        readable_output=tableToMarkdown('Analysis Overview Summary:', result, removeNull=True)
+        readable_output=tableToMarkdown('Analysis Overview Summary:', result, headerTransform=
+        lambda x: {'analysis_start_time': 'Analysis Start Time',
+                   'last_multi_scan': 'Last Multi Scan',
+                   'multiscan_result': 'Multiscan Result',
+                   'threat_score': 'Threat Score',
+                   'verdict': 'Verdict',
+                   'sha256': 'Sha256'
+
+                   }.get(x, x), removeNull=True)
 
     )
 
