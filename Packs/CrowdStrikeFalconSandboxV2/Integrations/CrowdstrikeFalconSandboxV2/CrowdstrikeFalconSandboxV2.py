@@ -272,8 +272,8 @@ def crowdstrike_submit_sample_command(client: Client, args):
 
 def crowdstrike_analysis_overview_command(client: Client, args):
     result = client.analysis_overview(args['file'])
-    file = Common.File(sha256=result['sha256'], size=result['size'], file_type=result['type'],
-                       dbot_score=get_dbot_score(args['file'], result['threat_score']))
+    file = Common.File(Common.DBotScore.NONE,sha256=result['sha256'], size=result['size'], file_type=result['type'],
+                       name=result['last_file_name'])
 
     table_cols = ["last_file_name", "threat_score", "other_file_name", 'sha256', "verdict"
         , "url_analysis", 'size', 'type', 'type_short']
@@ -287,7 +287,6 @@ def crowdstrike_analysis_overview_command(client: Client, args):
         readable_output=tableToMarkdown("Analysis Overview:", result, headers=table_cols,
                                         headerTransform=underscore_to_space,
                                         removeNull=True)
-        # TODO what should be human readable
     )
 
 
@@ -306,8 +305,7 @@ def crowdstrike_search_command(client: Client, args):
 
     def convert_to_file_res(res):
         return BWCFile(res, key_name_changes, False, size=res['size'], sha256=res['sha256'],
-                       dbot_score=get_dbot_score(res['sha256']
-                                                 , res['threat_score']),  # todo threatscore prob shouldnt be converted
+                       dbot_score=Common.DBotScore.NONE,
                        extension=res['type_short'], name=res['submit_name'], malware_family=res['vx_family'])
 
     return CommandResults(

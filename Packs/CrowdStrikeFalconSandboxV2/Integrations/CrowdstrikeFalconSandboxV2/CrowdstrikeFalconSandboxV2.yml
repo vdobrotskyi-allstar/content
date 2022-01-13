@@ -632,14 +632,6 @@ script:
         - contextPath: File.MalwareFamily
           description: Family classification of the file
           type: string
-        - contextPath: File.Malicious.Vendor
-          description: or malicious files, the vendor that made the decision
-          type: string
-        - contextPath: File.Malicious.Description
-          description: For malicious files, the reason for the vendor to make the decision
-        - contextPath: File.Size
-          description: ""
-          type: number
         - contextPath: File.Extension
           description: ""
           type: string
@@ -1257,37 +1249,15 @@ script:
         - contextPath: File.Size
           description: ""
           type: number
-        - contextPath: File.SHA1
-          description: ""
-          type: string
         - contextPath: File.SHA256
           description: ""
           type: string
         - contextPath: File.Name
           description: ""
           type: string
-        - contextPath: File.SSDeep
-          description: ""
-          type: string
         - contextPath: File.Type
           description: ""
           type: string
-        - contextPath: File.Malicious.Vendor
-          description: or malicious files, the vendor that made the decision
-          type: string
-        - contextPath: File.Malicious.Description
-          description: For malicious files, the reason for the vendor to make the decision
-        - contextPath: DBotScore.Indicator
-          description: The indicator that was tested.
-          type: string
-        - contextPath: DBotScore.Score
-          description: The actual score.
-          type: number
-        - contextPath: DBotScore.Type
-          description: The indicator type.
-          type: string
-        - contextPath: DBotScore.Vendor
-          description: The vendor used to calculate the score.
     - name: cs-falcon-sandbox-analysis-overview-summary
       description: return overview for hash
       deprecated: false
