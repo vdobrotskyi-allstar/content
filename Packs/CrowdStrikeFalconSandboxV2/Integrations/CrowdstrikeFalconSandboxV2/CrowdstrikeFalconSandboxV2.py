@@ -155,11 +155,28 @@ def test_module(client: Client, _) -> str:
     return message
 
 
-def poll(name, interval=30, timeout=600):  # todo move to base?
-    """todo how to use this"""
+def poll(name: str, interval: int = 30, timeout: int = 600):  # todo move to base?
+    """To use on a function that should rerun itself
+    Commands that use this decorator must have a Polling argument, polling: true in yaml,
+    and a hidden polled_once argument.
+    Commands that use this decorator should return a tuple. Arg1 should be a boolean or a function that returns a boolean
+    as to whether or not it should continue to poll. Arg2 should be CommandRTesults in case of success,
+    or error CommandResults in case of Polling=false
+    ----------
+    name : str
+        The name of the command
+    interval : int
+        How many seconds until the next run
+    timeout : int
+        How long
+    Raises
+    ------
+    DemistoException
+        If the server version doesnt support Scheduled Commands
+    """
 
     def dec(func):
-        def inner(client, args):
+        def inner(client, args) -> CommandResults:
             if args.get('Polling'):
                 ScheduledCommand.raise_error_if_not_supported()
                 continue_poll_provider, result = func(client, args)
@@ -258,7 +275,7 @@ def crowdstrike_analysis_overview_command(client: Client, args):
     file = Common.File(sha256=result['sha256'], size=result['size'], file_type=result['type'],
                        dbot_score=get_dbot_score(args['file'], result['threat_score']))
 
-    table_cols = ["last_file_name", "threat_score", "other_file_name",'sha256', "verdict"
+    table_cols = ["last_file_name", "threat_score", "other_file_name", 'sha256', "verdict"
         , "url_analysis", 'size', 'type', 'type_short']
 
     return CommandResults(
@@ -296,8 +313,13 @@ def crowdstrike_search_command(client: Client, args):
     return CommandResults(
         raw_response=response,
         outputs_prefix='CrowdStrike.Search',
+        outputs_key_field='sha256',
         outputs=response['result'],
-        indicators=[convert_to_file_res(res) for res in response['result']]
+        indicators=[convert_to_file_res(res) for res in response['result']],
+        readable_output=tableToMarkdown("Search Results:", response['result'],
+                                        ['submit_name', 'verdict', 'vx_family', 'threat_score', 'sha256', 'size',
+                                         'environment_id', 'type', 'type_short', 'analysis_start_time'],
+                                        removeNull=True, headerTransform=underscore_to_space)
     )
 
 
@@ -317,31 +339,31 @@ class BWCFile(Common.File):
         return super_ret
 
 
-def file_with_bwc_fields(res):
-    file = BWCFile(res, {
-        'sha1': 'SHA1',
-        'sha256': 'SHA256',
-        'md5': 'MD5',
-        'job_id': 'JobID',
-        'environment_id': 'environmentId',
-        'threat_score': 'threatscore',
-        'environment_description': 'environmentDescription',
-        'submit_name': 'submitname',
-        ' url_analysis': 'isurlanalysis',
-        'interesting:': 'isinteresting',
-        'vx_family': 'family'}, False, size=res['size'], file_type=res['type'], sha1=res['sha1'], sha256=res['sha256'],
-                   md5=res['md5'],
-                   sha512=res['sha512'], name=res['submit_name'], ssdeep=res['ssdeep'],
-                   malware_family=res['vx_family'],
-                   dbot_score=get_dbot_score(res['sha256'], res['threat_level']))
-
-    return file
-
-
 @poll('cs-falcon-sandbox-scan')
 def crowdstrike_scan_command(client: Client, args):
     hashes = args['file'].split(',')
     scan_response = client.scan(hashes)
+
+    def file_with_bwc_fields(res):
+        file = BWCFile(res, {
+            'sha1': 'SHA1',
+            'sha256': 'SHA256',
+            'md5': 'MD5',
+            'job_id': 'JobID',
+            'environment_id': 'environmentId',
+            'threat_score': 'threatscore',
+            'environment_description': 'environmentDescription',
+            'submit_name': 'submitname',
+            ' url_analysis': 'isurlanalysis',
+            'interesting:': 'isinteresting',
+            'vx_family': 'family'}, False, size=res['size'], file_type=res['type'], sha1=res['sha1'],
+                       sha256=res['sha256'],
+                       md5=res['md5'],
+                       sha512=res['sha512'], name=res['submit_name'], ssdeep=res['ssdeep'],
+                       malware_family=res['vx_family'],
+                       dbot_score=get_dbot_score(res['sha256'], res['threat_level']))
+
+        return file
 
     files = [file_with_bwc_fields(res) for res in scan_response]
 
@@ -361,23 +383,28 @@ def crowdstrike_scan_command(client: Client, args):
 
 def create_scan_results_readable_output(scan_response):
     table_field_dict = {
-        'threatlevel': 'threat level',
+        'submit_name': 'submit name',
+        'threat_level': 'threat level',
+        'threat_score' : 'threat score',
+        'verdict' : 'verdict',
         'total_network_connections': 'total network connections',
-        'targeturl': 'target url',
+        'target_url': 'target url',
         'classification_tags': 'classification tags',
-        'threatscore': 'threat score',
         'total_processes': 'total processes',
-        'submitname': 'submit name',
-        'environmentDescription': 'environment description',
-        'isinteresting': 'interesting',
-        'environmentId': 'environment id',
-        'isurlanalysis': 'url analysis',
+        'environment_description': 'environment description',
+        'interesting': 'interesting',
+        'environment_id': 'environment id',
+        'url_analysis': 'url analysis',
         'analysis_start_time': 'analysis start time',
-        'total_signatures': 'total signatures'
+        'total_signatures': 'total signatures',
+        'type': 'type',
+        'type_short': 'type short',
+        'vx_family': 'Malware Family',
+        'sha256' : 'sha256'
 
     }
-    return tableToMarkdown('Scan Results:', scan_response,
-                           headerTransform=lambda x: table_field_dict.get(x, x))
+    return tableToMarkdown('Scan Results:', scan_response, headers=list(table_field_dict.keys()),
+                           headerTransform=lambda x: table_field_dict.get(x, x), removeNull=True)
 
 
 def crowdstrike_analysis_overview_summary_command(client: Client, args):

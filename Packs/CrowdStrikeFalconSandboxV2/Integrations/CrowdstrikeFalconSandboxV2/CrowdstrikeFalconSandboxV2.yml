@@ -447,7 +447,20 @@ script:
           defaultValue: ""
           predefined:
             - ""
-      outputs: []
+      outputs:
+        - contextPath: Crowdstrike.Submit.job_id
+          description: ''
+          type: String
+        - contextPath: Crowdstrike.Submit.submission_id
+          description: ''
+          type: String
+        - contextPath: Crowdstrike.Submit.environment_id
+          description: ''
+          type: Number
+        - contextPath: Crowdstrike.Submit.sha256
+          description: ''
+          type: String
+
     - name: cs-falcon-sandbox-search
       description: Search the database using the Falcon Sandbox search syntax
       deprecated: false
@@ -717,7 +730,7 @@ script:
             16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
             bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32
             bit"'
-          required: true
+          required: false
           isArray: false
           auto: PREDEFINED
           defaultValue: ""
@@ -1100,7 +1113,23 @@ script:
           defaultValue: ""
           predefined:
             - ""
-      outputs: []
+      outputs:
+        - contextPath: Crowdstrike.Submit.job_id
+          description: ''
+          type: String
+        - contextPath: Crowdstrike.Submit.submission_type
+          description: ''
+          type: String
+        - contextPath: Crowdstrike.Submit.submission_id
+          description: ''
+          type: String
+        - contextPath: Crowdstrike.Submit.environment_id
+          description: ''
+          type: Number
+        - contextPath: Crowdstrike.Submit.sha256
+          description: ''
+          type: String
+
     - name: cs-falcon-sandbox-get-screenshots
       description: " Retrieves screenshots from a report"
       deprecated: false
@@ -1270,7 +1299,26 @@ script:
           defaultValue: ""
           predefined:
             - ""
-      outputs: []
+      outputs:
+        - contextPath: Crowdstrike.AnalysisOverviewSummary.sha256
+          description: ''
+          type: String
+        - contextPath: Crowdstrike.AnalysisOverviewSummary.threat_score
+          description: ''
+          type: Unknown
+        - contextPath: Crowdstrike.AnalysisOverviewSummary.verdict
+          description: ''
+          type: String
+        - contextPath: Crowdstrike.AnalysisOverviewSummary.analysis_start_time
+          description: ''
+          type: Unknown
+        - contextPath: Crowdstrike.AnalysisOverviewSummary.last_multi_scan
+          description: ''
+          type: Date
+        - contextPath: Crowdstrike.AnalysisOverviewSummary.multiscan_result
+          description: ''
+          type: Number
+
     - name: cs-falcon-sandbox-analysis-overview-refresh
       description: refresh overview and download fresh data from external services
       deprecated: false
