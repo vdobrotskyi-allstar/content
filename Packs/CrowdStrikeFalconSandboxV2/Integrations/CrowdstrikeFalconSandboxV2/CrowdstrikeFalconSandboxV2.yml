@@ -427,9 +427,243 @@ script:
           description: Icon of environment
           type: string
       description: Get a list of all available environments
+    - name: crowdstrike-get-environments
+      deprecated: true
+      arguments: []
+      outputs:
+        - contextPath: CrowdStrike.Environment.ID
+          description: Environment ID
+          type: number
+        - contextPath: CrowdStrike.Environment.description
+          description: Environment description
+          type: string
+        - contextPath: CrowdStrike.Environment.architecture
+          description: Environment architecture
+          type: string
+        - contextPath: CrowdStrike.Environment.VMs_total
+          description: Total virtual machines in environment
+          type: number
+        - contextPath: CrowdStrike.Environment.VMs_busy
+          description: Busy virtual machines in environment
+          type: number
+        - contextPath: CrowdStrike.Environment.analysisMode
+          description: "Analysis mode of environment "
+          type: string
+        - contextPath: CrowdStrike.Environment.groupicon
+          description: Icon of environment
+          type: string
+      description: Get a list of all available environments
     - name: cs-falcon-sandbox-submit-sample
       description: Submit a file from investigation to analysis server
       deprecated: false
+      polling: true
+      arguments:
+        - name: entryId
+          description: War room entry Id
+          required: true
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+        - name: environmentID
+          description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu
+            16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
+            bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32
+            bit"'
+          required: true
+          isArray: false
+          auto: PREDEFINED
+          defaultValue: ""
+          predefined:
+            - "100"
+            - "110"
+            - "120"
+            - "200"
+            - "300"
+        - name: Polling
+          description: Whether the command should poll until the result is ready
+          required: false
+          isArray: false
+          defaultValue: false
+          auto: PREDEFINED
+          predefined:
+            - "true"
+            - "false"
+        - name: no_share_third_party
+          description: When set to 'true', the sample is never shared with any third party.
+          required: false
+          isArray: false
+          auto: PREDEFINED
+          predefined:
+            - "true"
+            - "false"
+        - name: no_hash_lookup
+          description: When set to 'true', the sample is never shared with any third party.
+          required: false
+          isArray: false
+          auto: PREDEFINED
+          predefined:
+            - "true"
+            - "false"
+        - name: allow_community_access
+          description: When set to 'true', the sample will be available for the community.
+          required: false
+          isArray: false
+          auto: PREDEFINED
+          predefined:
+            - "true"
+            - "false"
+        - name: action_script
+          description: "Optional custom runtime action script. Available runtime scripts:
+            default, default_maxantievasion, default_randomfiles,
+            default_randomtheme, default_openie"
+          required: false
+          isArray: false
+          auto: PREDEFINED
+          defaultValue: ""
+          predefined:
+            - default
+            - default_maxantievasion
+            - default_randomfiles
+            - default_randomtheme
+            - default_openie
+        - name: hybrid_analysis
+          description: When set to 'false', no memory dumps or memory dump analysis will
+            take place.
+          required: false
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+        - name: experimental_anti_evasion
+          description: When set to 'true', will set all experimental anti-evasion options
+            of the Kernelmode Monitor.
+          required: false
+          isArray: false
+          defaultValue: ""
+          auto: PREDEFINED
+          predefined:
+            - "true"
+            - "false"
+        - name: script_logging
+          description: When set to 'true', will set the in-depth script logging engine of
+            the Kernelmode Monitor.
+          required: false
+          isArray: false
+          defaultValue: ""
+          auto: PREDEFINED
+          predefined:
+            - "true"
+            - "false"
+        - name: input_sample_tampering
+          description: When set to 'true', will allow experimental anti-evasion options of
+            the Kernelmode Monitor that tamper with the input sample.
+          required: false
+          isArray: false
+          defaultValue: ""
+          auto: PREDEFINED
+          predefined:
+            - "true"
+            - "false"
+        - name: network_settings
+          description: "Network settings, by the default, fully operating network is set.
+            Available options: default: 'Fully operating network', tor: 'Route
+            network traffic via TOR', simulated: 'Simulate network traffic'"
+          required: false
+          isArray: false
+          defaultValue: ""
+          auto: PREDEFINED
+          predefined:
+            - default
+            - tor
+            - simulated
+        - name: email
+          description: Optional E-Mail address that may be associated with the submission
+            for notification
+          required: false
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+        - name: comment
+          description: "Optional comment text that may be associated with the
+            submission/sample (Note: you can use #tags here)"
+          required: false
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+        - name: custom_cmd_line
+          description: Optional commandline that should be passed to the analysis file
+          required: false
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+        - name: custom_run_time
+          description: Optional runtime duration (in seconds)
+          required: false
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+        - name: submit_name
+          description: Optional runtime duration (in seconds)
+          required: false
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+        - name: priority
+          description: Optional priority value between 1 (lowest) and 10 (highest), by
+            default all samples run with highest priority
+          required: false
+          isArray: false
+          defaultValue: ""
+          auto: PREDEFINED
+          predefined:
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+            - "5"
+            - "6"
+            - "7"
+            - "8"
+            - "9"
+            - "10"
+        - name: document_password
+          description: Optional document password that will be used to fill-in
+            Adobe/Office password prompts
+          required: false
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+        - name: environment_variable
+          description: "Optional system environment value. The value is provided in the
+            format: name=value"
+          required: false
+          isArray: false
+          defaultValue: ""
+          predefined:
+            - ""
+      outputs:
+        - contextPath: Crowdstrike.Submit.job_id
+          description: ''
+          type: String
+        - contextPath: Crowdstrike.Submit.submission_id
+          description: ''
+          type: String
+        - contextPath: Crowdstrike.Submit.environment_id
+          description: ''
+          type: Number
+        - contextPath: Crowdstrike.Submit.sha256
+          description: ''
+          type: String
+    - name: crowdstrike-submit-sample
+      description: Submit a file from investigation to analysis server
+      deprecated: true
       polling: true
       arguments:
         - name: entryId
