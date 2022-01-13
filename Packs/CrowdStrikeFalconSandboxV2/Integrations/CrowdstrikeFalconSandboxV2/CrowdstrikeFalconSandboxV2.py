@@ -125,10 +125,6 @@ def get_search_term_args(args) -> Dict[str, Any]:
         return {term: args[term] for term in SEARCH_TERM_QUERY_ARGS if args.get(term, None)}
 
 
-def to_image_result(image):
-    return fileResult(image['name'], base64.b64decode(image['image']), entryTypes['entryInfoFile'])
-
-
 def get_api_id(args):
     if args.get('file') and (args.get('environmentID') or args.get('environmentId')):  # backwards compatibility
         return f"{args['file']}:{args.get('environmentID') or args.get('environmentId')}"
@@ -172,7 +168,7 @@ def poll(name: str, interval: int = 30, timeout: int = 600):  # todo move to bas
     Raises
     ------
     DemistoException
-        If the server version doesnt support Scheduled Commands
+        If the server version doesnt support Scheduled Commands (< 6.2.0)
     """
 
     def dec(func):
@@ -272,11 +268,11 @@ def crowdstrike_submit_sample_command(client: Client, args):
 
 def crowdstrike_analysis_overview_command(client: Client, args):
     result = client.analysis_overview(args['file'])
-    file = Common.File(Common.DBotScore.NONE,sha256=result['sha256'], size=result['size'], file_type=result['type'],
+    file = Common.File(Common.DBotScore.NONE, sha256=result['sha256'], size=result['size'], file_type=result['type'],
                        name=result['last_file_name'])
 
-    table_cols = ["last_file_name", "threat_score", "other_file_name", 'sha256', "verdict"
-        , "url_analysis", 'size', 'type', 'type_short']
+    table_cols = ["last_file_name", "threat_score", "other_file_name", 'sha256', "verdict", "url_analysis", 'size',
+                  'type', 'type_short']
 
     return CommandResults(
         outputs_prefix='CrowdStrike.AnalysisOverview',
@@ -487,6 +483,9 @@ def crowdstrike_get_environments_command(client: Client, _):
 
 
 def crowdstrike_get_screenshots_command(client: Client, args: Dict[str, Any]):
+    def to_image_result(image):
+        return fileResult(image['name'], base64.b64decode(image['image']), entryTypes['entryInfoFile'])
+
     key = get_api_id(args)
     return [to_image_result(image) for image in client.get_screenshots(key)]
 

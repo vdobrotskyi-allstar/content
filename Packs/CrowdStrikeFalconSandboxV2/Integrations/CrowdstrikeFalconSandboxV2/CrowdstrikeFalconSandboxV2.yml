@@ -921,7 +921,7 @@ script:
           isArray: false
           defaultValue: ""
         - name: verdict
-          description: description
+          description: Verdict of search result
           required: false
           isArray: false
           auto: PREDEFINED
@@ -1010,21 +1010,21 @@ script:
           predefined:
             - ""
         - name: imp_hash
-          description: description
+          description: Import Hash
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: ssdeep
-          description: description
+          description: SSDeep
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: authentihash
-          description: description
+          description: Authentihash of the file
           required: false
           isArray: false
           defaultValue: ""
@@ -1146,7 +1146,7 @@ script:
           isArray: false
           defaultValue: ""
         - name: verdict
-          description: description
+          description: Verdict of search result
           required: false
           isArray: false
           auto: PREDEFINED
@@ -1235,21 +1235,21 @@ script:
           predefined:
             - ""
         - name: imp_hash
-          description: description
+          description: Import hash
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: ssdeep
-          description: description
+          description: SSdeep
           required: false
           isArray: false
           defaultValue: ""
           predefined:
             - ""
         - name: authentihash
-          description: description
+          description: Authentihash of the file
           required: false
           isArray: false
           defaultValue: ""
@@ -1373,7 +1373,7 @@ script:
           predefined:
             - ""
         - name: file-type
-          description: description
+          description: Type of the file
           required: false
           isArray: false
           auto: PREDEFINED
@@ -1597,7 +1597,7 @@ script:
           predefined:
             - ""
         - name: file-type
-          description: description
+          description: Type of the file
           required: false
           isArray: false
           auto: PREDEFINED
@@ -2205,7 +2205,7 @@ script:
             16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
             bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32
             bit"'
-          required: true
+          required: false
           isArray: false
           auto: PREDEFINED
           defaultValue: ""
@@ -2216,7 +2216,7 @@ script:
             - "200"
             - "300"
         - name: JobID
-          description: description
+          description: Job ID of file
           required: false
           isArray: false
           defaultValue: ""
@@ -2239,7 +2239,7 @@ script:
             16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
             bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32
             bit"'
-          required: true
+          required: false
           isArray: false
           auto: PREDEFINED
           defaultValue: ""
@@ -2250,7 +2250,7 @@ script:
             - "200"
             - "300"
         - name: JobID
-          description: description
+          description: Job ID of file
           required: false
           isArray: false
           defaultValue: ""
@@ -2558,11 +2558,11 @@ script:
             - ""
       outputs: []
     - name: cs-falcon-sandbox-report-state
-      description: description
+      description: Get the report state for the given ID
       deprecated: false
       arguments:
         - name: JobID
-          description: description
+          description: Job ID of file
           required: false
           isArray: false
           defaultValue: ""
@@ -2573,7 +2573,7 @@ script:
             16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
             bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32
             bit"'
-          required: true
+          required: false
           isArray: false
           auto: PREDEFINED
           defaultValue: ""
@@ -2584,7 +2584,7 @@ script:
             - "200"
             - "300"
         - name: file
-          description: description
+          description: The hash of the file
           required: false
           isArray: false
           defaultValue: ""
