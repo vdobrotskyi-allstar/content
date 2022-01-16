@@ -144,7 +144,7 @@ def test_module(client: Client, _) -> str:
         client.get_environments()
         message = 'ok'
     except DemistoException as e:
-        if 'Forbidden' in str(e) or 'Authorization' in str(e):  # TODO: make sure you capture authentication errors
+        if 'Forbidden' in str(e) or 'Authorization' in str(e):
             message = 'Authorization Error: make sure API Key is correctly set'
         else:
             raise e
@@ -215,6 +215,47 @@ def has_error_state(client, key):
     return False
 
 
+class BWCFile(Common.File):
+    def __init__(self, bwc_fields: Dict, key_change_map: Dict, only_given_fields, *args, **kwargs):
+        super(BWCFile, self).__init__(*args, **kwargs)
+        self.bwc_fields = bwc_fields
+        self.key_change_map = key_change_map
+        self.only_given_fields = only_given_fields
+
+    def to_context(self):
+        super_ret = super().to_context()
+        for key in super_ret.keys():
+            if key.startswith("File"):
+                super_ret[key].update(map_dict_keys(self.bwc_fields, self.key_change_map, self.only_given_fields))
+        return super_ret
+
+
+def create_scan_results_readable_output(scan_response):
+    table_field_dict = {
+        'submit_name': 'submit name',
+        'threat_level': 'threat level',
+        'threat_score': 'threat score',
+        'verdict': 'verdict',
+        'total_network_connections': 'total network connections',
+        'target_url': 'target url',
+        'classification_tags': 'classification tags',
+        'total_processes': 'total processes',
+        'environment_description': 'environment description',
+        'interesting': 'interesting',
+        'environment_id': 'environment id',
+        'url_analysis': 'url analysis',
+        'analysis_start_time': 'analysis start time',
+        'total_signatures': 'total signatures',
+        'type': 'type',
+        'type_short': 'type short',
+        'vx_family': 'Malware Family',
+        'sha256': 'sha256'
+
+    }
+    return tableToMarkdown('Scan Results:', scan_response, headers=list(table_field_dict.keys()),
+                           headerTransform=lambda x: table_field_dict.get(x, x), removeNull=True)
+
+
 def get_dbot_score(filehash, raw_score: int):
     def calc_score():
         return {3: 0,
@@ -235,7 +276,7 @@ def get_submission_arguments(args) -> Dict[str, Any]:
 
 def submission_response(client, response, polling):
     submission_res = CommandResults(outputs_prefix='Crowdstrike.Submit', outputs_key_field='submission_id',
-                                    raw_response=response, readable_output=
+                                    raw_response=response, outputs=response, readable_output=
                                     tableToMarkdown("Submission Data:", response, headerTransform=underscore_to_space))
     if not polling:
         return submission_res
@@ -245,25 +286,19 @@ def submission_response(client, response, polling):
                                              "Polling": True})
 
 
-def crowdstrike_submit_sample(client: Client, args):
-    file_contents = demisto.getFilePath(args['entryId'])
-    # TODO is this a generic error when not found? Seems obscure. Add try except?
-    submission_args = get_submission_arguments(args)
-    return client.submit_file(file_contents, submission_args)
-
-
-def crowdstrike_submit_url(client: Client, args):
+def crowdstrike_submit_url_command(client: Client, args):
     submission_args = get_submission_arguments(args)
     url = args['url']
-    return client.submit_url(url, submission_args)
-
-
-def crowdstrike_submit_url_command(client: Client, args):
-    return submission_response(client, crowdstrike_submit_url(client, args), args.get('Polling'))
+    response = client.submit_url(url, submission_args)
+    return submission_response(client, response, args.get('Polling'))
 
 
 def crowdstrike_submit_sample_command(client: Client, args):
-    return submission_response(client, crowdstrike_submit_sample(client, args), args.get('Polling'))
+    file_contents = demisto.getFilePath(args['entryId'])
+    # TODO is this a generic error when not found? Seems obscure. Add try except?
+    submission_args = get_submission_arguments(args)
+    response = client.submit_file(file_contents, submission_args)
+    return submission_response(client, response, args.get('Polling'))
 
 
 def crowdstrike_analysis_overview_command(client: Client, args):
@@ -317,22 +352,6 @@ def crowdstrike_search_command(client: Client, args):
     )
 
 
-class BWCFile(Common.File):
-
-    def __init__(self, bwc_fields: Dict, key_change_map: Dict, only_given_fields, *args, **kwargs):
-        super(BWCFile, self).__init__(*args, **kwargs)
-        self.bwc_fields = bwc_fields
-        self.key_change_map = key_change_map
-        self.only_given_fields = only_given_fields
-
-    def to_context(self):
-        super_ret = super().to_context()
-        for key in super_ret.keys():
-            if key.startswith("File"):
-                super_ret[key].update(map_dict_keys(self.bwc_fields, self.key_change_map, self.only_given_fields))
-        return super_ret
-
-
 @poll('cs-falcon-sandbox-scan')
 def crowdstrike_scan_command(client: Client, args):
     hashes = args['file'].split(',')
@@ -373,32 +392,6 @@ def crowdstrike_scan_command(client: Client, args):
     except ValueError:
         demisto.debug(f'Cannot get a key to check state for {hashes}')
     return True, command_result
-
-
-def create_scan_results_readable_output(scan_response):
-    table_field_dict = {
-        'submit_name': 'submit name',
-        'threat_level': 'threat level',
-        'threat_score': 'threat score',
-        'verdict': 'verdict',
-        'total_network_connections': 'total network connections',
-        'target_url': 'target url',
-        'classification_tags': 'classification tags',
-        'total_processes': 'total processes',
-        'environment_description': 'environment description',
-        'interesting': 'interesting',
-        'environment_id': 'environment id',
-        'url_analysis': 'url analysis',
-        'analysis_start_time': 'analysis start time',
-        'total_signatures': 'total signatures',
-        'type': 'type',
-        'type_short': 'type short',
-        'vx_family': 'Malware Family',
-        'sha256': 'sha256'
-
-    }
-    return tableToMarkdown('Scan Results:', scan_response, headers=list(table_field_dict.keys()),
-                           headerTransform=lambda x: table_field_dict.get(x, x), removeNull=True)
 
 
 def crowdstrike_analysis_overview_summary_command(client: Client, args):

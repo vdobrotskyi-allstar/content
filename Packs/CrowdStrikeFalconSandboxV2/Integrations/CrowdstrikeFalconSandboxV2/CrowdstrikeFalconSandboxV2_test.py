@@ -292,3 +292,53 @@ def test_bwc_file_context():
     assert file_dict['type1'] == type_val
     assert file_dict['SHA256'] == sha256
     assert file_dict['environment_description'] == ed_val
+
+
+def test_crowdstrike_submit_url_command_no_poll(requests_mock):
+    """
+
+       Given:
+         - poll false
+
+       When:
+         - submit url
+
+       Then:
+         - get submission result without polling scan
+       """
+    submit_response = {
+        "submission_type": "page_url",
+        "job_id": "jobid",
+        "submission_id": "submissionId",
+        "environment_id": 100,
+        "sha256": "9e37b19decf1ff7cb2b4d1617b4701006c51e175ef4c921c90e79a88eaf8c49a"
+    }
+    mock_call = requests_mock.post(BASE_URL + '/submit/url', json=submit_response)
+    result = crowdstrike_submit_url_command(client, {'url': BASE_URL, 'environmentID': 300, 'comment': 'some comment'})
+    assert result.outputs == submit_response
+    assert 'environment_id' in mock_call.last_request.text
+    assert 'comment' in mock_call.last_request.text
+
+
+def test_crowdstrike_submit_url_command_poll(requests_mock, mocker):
+    """
+
+       Given:
+         - poll true, scan result in progress
+
+       When:
+         - submit url
+
+       Then:
+         - submission result returned and polling scan result
+       """
+    submit_response = util_load_json("test_data/submission_response.json")
+    mocker.patch.object(demisto, 'results')
+    submit_call = requests_mock.post(BASE_URL + '/submit/url', json=submit_response)
+    search_call = requests_mock.post(BASE_URL + '/search/hashes', json=[])
+    state_call = requests_mock.get(BASE_URL + f"/report/12345/state", json={'state': 'IN_PROGRESS'})
+
+    result = crowdstrike_submit_url_command(client, {'url': BASE_URL, 'environmentID': 300, 'comment': 'some comment',
+                                                     "Polling": True})
+    assert demisto.results.call_args.args[0]['Contents'] == submit_response
+    assert result.scheduled_command is not None
