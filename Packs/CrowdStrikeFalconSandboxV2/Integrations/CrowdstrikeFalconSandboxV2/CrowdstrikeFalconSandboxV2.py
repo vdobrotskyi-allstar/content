@@ -25,14 +25,14 @@ from typing import Dict, Any
 requests.packages.urllib3.disable_warnings()  # pylint: disable=no-member
 
 SEARCH_TERM_QUERY_ARGS = ('filename', 'filetype', 'filetype_desc', 'env_id', 'country', 'verdict', 'av_detect',
-                          'vx_family', 'tag', 'date_from', 'date_to', 'port', 'host', 'domain', 'url', 'similiar_to',
+                          'vx_family', 'tag', 'date_from', 'date_to', 'port', 'host', 'domain', 'url', 'similar_to',
                           'context', 'imp_hash', 'ssdeep', 'authentihash')
 SUBMISSION_PARAMETERS = {'environmentID', 'no_share_third_party', 'allow_community_access', 'no_hash_lookup',
                          'action_script', 'hybrid_analysis', 'experimental_anti_evasion', 'script_logging',
                          'input_sample_tampering', 'network_settings', 'email', 'comment', 'custom_cmd_line',
                          'custom_run_time', 'submit_name', 'priority', 'document_password', 'environment_variable',
                          }
-INTEGRATION_RELIABILITY = ''
+INTEGRATION_RELIABILITY = 'C - Fairly reliable'
 
 
 class Client(BaseClient):
@@ -348,7 +348,7 @@ def crowdstrike_scan_command(client: Client, args):
             'threat_score': 'threatscore',
             'environment_description': 'environmentDescription',
             'submit_name': 'submitname',
-            ' url_analysis': 'isurlanalysis',
+            'url_analysis': 'isurlanalysis',
             'interesting:': 'isinteresting',
             'vx_family': 'family'}, False, size=res['size'], file_type=res['type'], sha1=res['sha1'],
                        sha256=res['sha256'],
