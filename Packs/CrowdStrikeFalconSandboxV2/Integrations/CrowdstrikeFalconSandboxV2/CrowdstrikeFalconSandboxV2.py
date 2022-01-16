@@ -96,10 +96,10 @@ def translate_verdict(param: str):
 
 def split_query_to_term_args(query: str) -> Dict[str, Any]:
     def get_value(term):
-        return term[term.index(':') + 1:]
+        return term[term.index(':') + 1:].strip()
 
     def get_key(term):
-        return term[:term.index(':')]
+        return term[:term.index(':')].strip()
 
     return {get_key(term): get_value(term) for term in query.split(',') if get_value(term)}
 
@@ -379,8 +379,8 @@ def create_scan_results_readable_output(scan_response):
     table_field_dict = {
         'submit_name': 'submit name',
         'threat_level': 'threat level',
-        'threat_score' : 'threat score',
-        'verdict' : 'verdict',
+        'threat_score': 'threat score',
+        'verdict': 'verdict',
         'total_network_connections': 'total network connections',
         'target_url': 'target url',
         'classification_tags': 'classification tags',
@@ -394,7 +394,7 @@ def create_scan_results_readable_output(scan_response):
         'type': 'type',
         'type_short': 'type short',
         'vx_family': 'Malware Family',
-        'sha256' : 'sha256'
+        'sha256': 'sha256'
 
     }
     return tableToMarkdown('Scan Results:', scan_response, headers=list(table_field_dict.keys()),
@@ -506,6 +506,7 @@ def main() -> None:
     :return:
     :rtype:
     """
+    demisto.getIntegrationContext()
     params: Dict[str, Any] = demisto.params()
     args: Dict[str, Any] = demisto.args()
     global INTEGRATION_RELIABILITY
@@ -561,5 +562,5 @@ def main() -> None:
 
 ''' ENTRY POINT '''
 
-# if __name__ in ('__main__', '__builtin__', 'builtins'): #TODO put me back
-main()
+if __name__ in ('__main__', '__builtin__', 'builtins'):
+    main()
