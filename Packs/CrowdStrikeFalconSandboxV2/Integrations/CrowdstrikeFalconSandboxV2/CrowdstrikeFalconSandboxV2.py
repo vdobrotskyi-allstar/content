@@ -27,7 +27,9 @@ requests.packages.urllib3.disable_warnings()  # pylint: disable=no-member
 SEARCH_TERM_QUERY_ARGS = ('filename', 'filetype', 'filetype_desc', 'env_id', 'country', 'verdict', 'av_detect',
                           'vx_family', 'tag', 'date_from', 'date_to', 'port', 'host', 'domain', 'url', 'similar_to',
                           'context', 'imp_hash', 'ssdeep', 'authentihash')
-SUBMISSION_PARAMETERS = {'environmentID', 'no_share_third_party', 'allow_community_access', 'no_hash_lookup',
+# envid repeated for bw compatibility. Must be in this order so old overrides new default
+SUBMISSION_PARAMETERS = {'environmentID', 'environmentId', 'no_share_third_party', 'allow_community_access',
+                         'no_hash_lookup',
                          'action_script', 'hybrid_analysis', 'experimental_anti_evasion', 'script_logging',
                          'input_sample_tampering', 'network_settings', 'email', 'comment', 'custom_cmd_line',
                          'custom_run_time', 'submit_name', 'priority', 'document_password', 'environment_variable',
@@ -127,7 +129,7 @@ def get_search_term_args(args) -> Dict[str, Any]:
 
 def get_api_id(args):
     if args.get('file') and (args.get('environmentID') or args.get('environmentId')):  # backwards compatibility
-        return f"{args['file']}:{args.get('environmentID') or args.get('environmentId')}"
+        return f"{args['file']}:{args.get('environmentId') or args.get('environmentID')}" #must be this order to override defaults
     elif args.get('JobID'):
         return args['JobID']
     else:
@@ -151,7 +153,8 @@ def test_module(client: Client, _) -> str:
     return message
 
 
-def poll(name: str, interval: int = 30, timeout: int = 600, poll_message: str = 'Fetching Results:'): # todo move to base?
+def poll(name: str, interval: int = 30, timeout: int = 600,
+         poll_message: str = 'Fetching Results:'):  # todo move to base?
     """To use on a function that should rerun itself
     Commands that use this decorator must have a Polling argument, polling: true in yaml,
     and a hidden polled_once argument.

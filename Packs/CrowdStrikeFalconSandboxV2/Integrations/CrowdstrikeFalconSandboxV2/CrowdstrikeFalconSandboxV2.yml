@@ -473,7 +473,7 @@ script:
           required: true
           isArray: false
           auto: PREDEFINED
-          defaultValue: ""
+          defaultValue: "100"
           predefined:
             - "100"
             - "110"
@@ -681,13 +681,15 @@ script:
           required: true
           isArray: false
           auto: PREDEFINED
-          defaultValue: ""
+          defaultValue: "100"
           predefined:
             - "100"
             - "110"
             - "120"
             - "200"
             - "300"
+        - name: environmentId
+          deprecated: true
         - name: Polling
           description: Whether the command should poll until the result is ready
           required: false
@@ -1589,6 +1591,8 @@ script:
             - "120"
             - "200"
             - "300"
+        - name: environmentId
+          deprecated: true
         - name: JobID
           description: Job ID of file to generate report for
           required: false
@@ -1787,7 +1791,7 @@ script:
           required: true
           isArray: false
           auto: PREDEFINED
-          defaultValue: ""
+          defaultValue: "100"
           predefined:
             - "100"
             - "110"
@@ -1998,7 +2002,7 @@ script:
           required: true
           isArray: false
           auto: PREDEFINED
-          defaultValue: ""
+          defaultValue: "100"
           predefined:
             - "100"
             - "110"

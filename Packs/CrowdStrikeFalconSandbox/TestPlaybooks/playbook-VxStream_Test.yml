@@ -2,7 +2,7 @@ id: VxStream Test
 version: -1
 contentitemfields:
   propagationLabels: []
-name: VxStream Test
+name: CrowdstrikeFalconSandbox2 Test
 starttaskid: '0'
 tasks:
   "0":
