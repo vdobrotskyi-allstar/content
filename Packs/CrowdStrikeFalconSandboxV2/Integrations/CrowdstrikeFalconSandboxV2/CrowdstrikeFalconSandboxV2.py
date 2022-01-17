@@ -129,7 +129,7 @@ def get_search_term_args(args) -> Dict[str, Any]:
 
 def get_api_id(args):
     if args.get('file') and (args.get('environmentID') or args.get('environmentId')):  # backwards compatibility
-        return f"{args['file']}:{args.get('environmentId') or args.get('environmentID')}" #must be this order to override defaults
+        return f"{args['file']}:{args.get('environmentId') or args.get('environmentID')}"  # must be this order to override defaults
     elif args.get('JobID'):
         return args['JobID']
     else:
@@ -278,9 +278,12 @@ def get_submission_arguments(args) -> Dict[str, Any]:
 
 
 def submission_response(client, response, polling):
-    submission_res = CommandResults(outputs_prefix='Crowdstrike.Submit', outputs_key_field='submission_id',
-                                    raw_response=response, outputs=response, readable_output=
+    submission_res = CommandResults(outputs_prefix='Crowdstrike', outputs_key_field='submission_id',
+                                    raw_response=response, outputs={'Submit': response, 'JobID': response['job_id'],
+                                                                    'EnvironmentID': response['environment_id']},
+                                    readable_output=
                                     tableToMarkdown("Submission Data:", response, headerTransform=underscore_to_space))
+
     if not polling:
         return submission_res
     else:
@@ -558,5 +561,5 @@ def main() -> None:
 
 ''' ENTRY POINT '''
 
-if __name__ in ('__main__', '__builtin__', 'builtins'):
-    main()
+# if __name__ in ('__main__', '__builtin__', 'builtins'):
+main()
