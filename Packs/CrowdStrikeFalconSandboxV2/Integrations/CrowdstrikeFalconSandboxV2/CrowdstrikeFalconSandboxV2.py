@@ -151,7 +151,7 @@ def test_module(client: Client, _) -> str:
     return message
 
 
-def poll(name: str, interval: int = 30, timeout: int = 600):  # todo move to base?
+def poll(name: str, interval: int = 30, timeout: int = 600, poll_message: str = 'Fetching Results:'): # todo move to base?
     """To use on a function that should rerun itself
     Commands that use this decorator must have a Polling argument, polling: true in yaml,
     and a hidden polled_once argument.
@@ -181,7 +181,7 @@ def poll(name: str, interval: int = 30, timeout: int = 600):  # todo move to bas
                 if not should_poll:
                     return result
                 polling_args = args
-                return CommandResults(readable_output='Fetching Results:' if not args.get('polled_once') else None,
+                return CommandResults(readable_output=poll_message if not args.get('polled_once') else None,
                                       scheduled_command=ScheduledCommand(command=name, next_run_in_seconds=interval,
                                                                          args={**polling_args, 'polled_once': True},
                                                                          timeout_in_seconds=timeout))

@@ -340,5 +340,8 @@ def test_crowdstrike_submit_url_command_poll(requests_mock, mocker):
 
     result = crowdstrike_submit_url_command(client, {'url': BASE_URL, 'environmentID': 300, 'comment': 'some comment',
                                                      "Polling": True})
+
+    assert submit_call.called and search_call.called and state_call.called
+
     assert demisto.results.call_args.args[0]['Contents'] == submit_response
     assert result.scheduled_command is not None
