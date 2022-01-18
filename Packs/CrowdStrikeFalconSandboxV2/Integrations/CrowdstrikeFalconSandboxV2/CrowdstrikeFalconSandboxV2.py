@@ -74,14 +74,8 @@ class Client(BaseClient):
                                   url_suffix='/submit/url')
 
     def submit_file(self, file_contents, params: Dict[str, Any]):
-        return {
-            "job_id": "5c24d1117ca3e16da83a7a05",
-            "submission_id": "61d6d9254ab12129fa387b06",
-            "environment_id": 100,
-            "sha256": "c558877e6ad6de172b8cc10461a12905c6b98d6265e650b3650b35ff73a63b03"
-        }
-        # return self._http_request(method='POST', data=params, url_suffix='/submit/file', files=
-        # {'file': (file_contents['name'], open(file_contents["path"], 'rb'))})
+        return self._http_request(method='POST', data=params, url_suffix='/submit/file', files=
+        {'file': (file_contents['name'], open(file_contents["path"], 'rb'))})
 
     def download_sample(self, sha256hash):
         return self._http_request(method='GET', url_suffix=f'/overview/{sha256hash}/sample', resp_type="response")
