@@ -74,8 +74,14 @@ class Client(BaseClient):
                                   url_suffix='/submit/url')
 
     def submit_file(self, file_contents, params: Dict[str, Any]):
-        return self._http_request(method='POST', data=params, url_suffix='/submit/file', files=
-        {'file': (file_contents['name'], open(file_contents["path"], 'rb'))})
+        return {
+            "job_id": "5c24d1117ca3e16da83a7a05",
+            "submission_id": "61d6d9254ab12129fa387b06",
+            "environment_id": 100,
+            "sha256": "c558877e6ad6de172b8cc10461a12905c6b98d6265e650b3650b35ff73a63b03"
+        }
+        # return self._http_request(method='POST', data=params, url_suffix='/submit/file', files=
+        # {'file': (file_contents['name'], open(file_contents["path"], 'rb'))})
 
     def download_sample(self, sha256hash):
         return self._http_request(method='GET', url_suffix=f'/overview/{sha256hash}/sample', resp_type="response")
@@ -278,7 +284,7 @@ def get_submission_arguments(args) -> Dict[str, Any]:
 
 
 def submission_response(client, response, polling):
-    submission_res = CommandResults(outputs_prefix='Crowdstrike', outputs_key_field='submission_id',
+    submission_res = CommandResults(outputs_prefix='CrowdStrike', outputs_key_field='submission_id',
                                     raw_response=response, outputs={'Submit': response, 'JobID': response['job_id'],
                                                                     'EnvironmentID': response['environment_id']},
                                     readable_output=
@@ -455,8 +461,8 @@ def underscore_to_space(x: str):
 def crowdstrike_report_state_command(client: Client, args):
     key = get_api_id(args)
     state = client.get_state(key)
-    return CommandResults(raw_response=state, readable_output=tableToMarkdown("State", state,
-                                                                              headerTransform=underscore_to_space))
+    return CommandResults(outputs_prefix="Crowdstrike.State",raw_response=state, outputs=state,
+                          readable_output=tableToMarkdown("State", state, headerTransform=underscore_to_space))
 
 
 def crowdstrike_get_environments_command(client: Client, _):

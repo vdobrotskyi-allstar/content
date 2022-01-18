@@ -649,16 +649,16 @@ script:
           predefined:
             - ""
       outputs:
-        - contextPath: Crowdstrike.Submit.job_id
+        - contextPath: CrowdStrike.Submit.job_id
           description: ''
           type: String
-        - contextPath: Crowdstrike.Submit.submission_id
+        - contextPath: CrowdStrike.Submit.submission_id
           description: ''
           type: String
-        - contextPath: Crowdstrike.Submit.environment_id
+        - contextPath: CrowdStrike.Submit.environment_id
           description: ''
           type: Number
-        - contextPath: Crowdstrike.Submit.sha256
+        - contextPath: CrowdStrike.Submit.sha256
           description: ''
           type: String
         - contextPath: CrowdStrike.Report.job_id
@@ -994,16 +994,16 @@ script:
           predefined:
             - ""
       outputs:
-        - contextPath: Crowdstrike.Submit.job_id
+        - contextPath: CrowdStrike.Submit.job_id
           description: ''
           type: String
-        - contextPath: Crowdstrike.Submit.submission_id
+        - contextPath: CrowdStrike.Submit.submission_id
           description: ''
           type: String
-        - contextPath: Crowdstrike.Submit.environment_id
+        - contextPath: CrowdStrike.Submit.environment_id
           description: ''
           type: Number
-        - contextPath: Crowdstrike.Submit.sha256
+        - contextPath: CrowdStrike.Submit.sha256
           description: ''
           type: String
     - name: cs-falcon-sandbox-search
@@ -2102,19 +2102,19 @@ script:
           predefined:
             - ""
       outputs:
-        - contextPath: Crowdstrike.Submit.job_id
+        - contextPath: CrowdStrike.Submit.job_id
           description: ''
           type: String
-        - contextPath: Crowdstrike.Submit.submission_type
+        - contextPath: CrowdStrike.Submit.submission_type
           description: ''
           type: String
-        - contextPath: Crowdstrike.Submit.submission_id
+        - contextPath: CrowdStrike.Submit.submission_id
           description: ''
           type: String
-        - contextPath: Crowdstrike.Submit.environment_id
+        - contextPath: CrowdStrike.Submit.environment_id
           description: ''
           type: Number
-        - contextPath: Crowdstrike.Submit.sha256
+        - contextPath: CrowdStrike.Submit.sha256
           description: ''
           type: String
         - contextPath: CrowdStrike.Report.job_id
@@ -2448,23 +2448,23 @@ script:
           predefined:
             - ""
       outputs:
-        - contextPath: Crowdstrike.Submit.job_id
+        - contextPath: CrowdStrike.Submit.job_id
           description: ''
           type: String
-        - contextPath: Crowdstrike.Submit.submission_type
+        - contextPath: CrowdStrike.Submit.submission_type
           description: ''
           type: String
-        - contextPath: Crowdstrike.Submit.submission_id
+        - contextPath: CrowdStrike.Submit.submission_id
           description: ''
           type: String
-        - contextPath: Crowdstrike.Submit.environment_id
+        - contextPath: CrowdStrike.Submit.environment_id
           description: ''
           type: Number
-        - contextPath: Crowdstrike.Submit.sha256
+        - contextPath: CrowdStrike.Submit.sha256
           description: ''
           type: String
     - name: cs-falcon-sandbox-get-screenshots
-      description: " Retrieves screenshots from a report"
+      description: "Retrieves screenshots from a report"
       deprecated: false
       arguments:
         - name: file
@@ -2496,7 +2496,25 @@ script:
           defaultValue: ""
           predefined:
             - ""
-      outputs: []
+      outputs:
+        - contextPath: InfoFile.Name
+          description: File name.
+          type: string
+        - contextPath: InfoFile.EntryID
+          description: File entry ID.
+          type: string
+        - contextPath: InfoFile.Size
+          description: File size.
+          type: number
+        - contextPath: InfoFile.Type
+          description: File type, e.g., "PE".
+          type: string
+        - contextPath: InfoFile.Info
+          description: Basic information of the file.
+          type: string
+        - contextPath: InfoFile.Extension
+          description: File extension.
+          type: string
     - name: crowdstrike-get-screenshots
       description: " Retrieves screenshots from a report"
       deprecated: true
@@ -2543,82 +2561,82 @@ script:
           predefined:
             - ""
       outputs:
-        - contextPath: Crowdstrike.AnalysisOverview.sha256
+        - contextPath: CrowdStrike.AnalysisOverview.sha256
           description: SHA256 of the file
           type: String
-        - contextPath: Crowdstrike.AnalysisOverview.last_file_name
+        - contextPath: CrowdStrike.AnalysisOverview.last_file_name
           description: ""
           type: String
-        - contextPath: Crowdstrike.AnalysisOverview.threat_score
+        - contextPath: CrowdStrike.AnalysisOverview.threat_score
           description: ""
           type: Unknown
-        - contextPath: Crowdstrike.AnalysisOverview.verdict
+        - contextPath: CrowdStrike.AnalysisOverview.verdict
           description: ""
           type: String
-        - contextPath: Crowdstrike.AnalysisOverview.url_analysis
+        - contextPath: CrowdStrike.AnalysisOverview.url_analysis
           description: ""
           type: Boolean
-        - contextPath: Crowdstrike.AnalysisOverview.size
+        - contextPath: CrowdStrike.AnalysisOverview.size
           description: ""
           type: Number
-        - contextPath: Crowdstrike.AnalysisOverview.type
+        - contextPath: CrowdStrike.AnalysisOverview.type
           description: ""
           type: String
-        - contextPath: Crowdstrike.AnalysisOverview.type_short
+        - contextPath: CrowdStrike.AnalysisOverview.type_short
           description: ""
           type: String
-        - contextPath: Crowdstrike.AnalysisOverview.analysis_start_time
+        - contextPath: CrowdStrike.AnalysisOverview.analysis_start_time
           description: ""
           type: Unknown
-        - contextPath: Crowdstrike.AnalysisOverview.last_multi_scan
+        - contextPath: CrowdStrike.AnalysisOverview.last_multi_scan
           description: ""
           type: Date
-        - contextPath: Crowdstrike.AnalysisOverview.architecture
+        - contextPath: CrowdStrike.AnalysisOverview.architecture
           description: ""
           type: Unknown
-        - contextPath: Crowdstrike.AnalysisOverview.multiscan_result
+        - contextPath: CrowdStrike.AnalysisOverview.multiscan_result
           description: ""
           type: Number
-        - contextPath: Crowdstrike.AnalysisOverview.scanners.name
+        - contextPath: CrowdStrike.AnalysisOverview.scanners.name
           description: ""
           type: String
-        - contextPath: Crowdstrike.AnalysisOverview.scanners.status
+        - contextPath: CrowdStrike.AnalysisOverview.scanners.status
           description: ""
           type: String
-        - contextPath: Crowdstrike.AnalysisOverview.scanners.error_message
+        - contextPath: CrowdStrike.AnalysisOverview.scanners.error_message
           description: ""
           type: Unknown
-        - contextPath: Crowdstrike.AnalysisOverview.scanners.progress
+        - contextPath: CrowdStrike.AnalysisOverview.scanners.progress
           description: ""
           type: Number
-        - contextPath: Crowdstrike.AnalysisOverview.scanners.total
+        - contextPath: CrowdStrike.AnalysisOverview.scanners.total
           description: ""
           type: Number
-        - contextPath: Crowdstrike.AnalysisOverview.scanners.positives
+        - contextPath: CrowdStrike.AnalysisOverview.scanners.positives
           description: ""
           type: Number
-        - contextPath: Crowdstrike.AnalysisOverview.scanners.percent
+        - contextPath: CrowdStrike.AnalysisOverview.scanners.percent
           description: ""
           type: Number
-        - contextPath: Crowdstrike.AnalysisOverview.scanners.anti_virus_results.name
+        - contextPath: CrowdStrike.AnalysisOverview.scanners.anti_virus_results.name
           description: ""
           type: String
-        - contextPath: Crowdstrike.AnalysisOverview.scanners.anti_virus_results.result
+        - contextPath: CrowdStrike.AnalysisOverview.scanners.anti_virus_results.result
           description: ""
           type: Boolean
-        - contextPath: Crowdstrike.AnalysisOverview.scanners.anti_virus_results.threat_found
+        - contextPath: CrowdStrike.AnalysisOverview.scanners.anti_virus_results.threat_found
           description: ""
           type: String
-        - contextPath: Crowdstrike.AnalysisOverview.reports
+        - contextPath: CrowdStrike.AnalysisOverview.reports
           description: ""
           type: String
-        - contextPath: Crowdstrike.AnalysisOverview.whitelisted
+        - contextPath: CrowdStrike.AnalysisOverview.whitelisted
           description: ""
           type: Boolean
-        - contextPath: Crowdstrike.AnalysisOverview.children_in_queue
+        - contextPath: CrowdStrike.AnalysisOverview.children_in_queue
           description: ""
           type: Number
-        - contextPath: Crowdstrike.AnalysisOverview.children_in_progress
+        - contextPath: CrowdStrike.AnalysisOverview.children_in_progress
           description: ""
           type: Number
         - contextPath: File.Size
@@ -2645,22 +2663,22 @@ script:
           predefined:
             - ""
       outputs:
-        - contextPath: Crowdstrike.AnalysisOverviewSummary.sha256
+        - contextPath: CrowdStrike.AnalysisOverviewSummary.sha256
           description: ''
           type: String
-        - contextPath: Crowdstrike.AnalysisOverviewSummary.threat_score
+        - contextPath: CrowdStrike.AnalysisOverviewSummary.threat_score
           description: ''
           type: Unknown
-        - contextPath: Crowdstrike.AnalysisOverviewSummary.verdict
+        - contextPath: CrowdStrike.AnalysisOverviewSummary.verdict
           description: ''
           type: String
-        - contextPath: Crowdstrike.AnalysisOverviewSummary.analysis_start_time
+        - contextPath: CrowdStrike.AnalysisOverviewSummary.analysis_start_time
           description: ''
           type: Unknown
-        - contextPath: Crowdstrike.AnalysisOverviewSummary.last_multi_scan
+        - contextPath: CrowdStrike.AnalysisOverviewSummary.last_multi_scan
           description: ''
           type: Date
-        - contextPath: Crowdstrike.AnalysisOverviewSummary.multiscan_result
+        - contextPath: CrowdStrike.AnalysisOverviewSummary.multiscan_result
           description: ''
           type: Number
     - name: cs-falcon-sandbox-analysis-overview-refresh
@@ -2830,7 +2848,37 @@ script:
           defaultValue: ""
           predefined:
             - ""
-      outputs: []
+      outputs:
+        - contextPath: File.SHA1
+          description: The SHA1 hash of the file.
+          type: String
+        - contextPath: File.SHA256
+          description: The SHA256 hash of the file.
+          type: String
+        - contextPath: File.SHA512
+          description: The SHA512 hash of the file.
+          type: String
+        - contextPath: File.Name
+          description: The name of the file.
+          type: String
+        - contextPath: File.SSDeep
+          description: The SSDeep hash of the file.
+          type: String
+        - contextPath: File.EntryID
+          description: EntryID of the file
+          type: String
+        - contextPath: File.Info
+          description: Information about the file.
+          type: String
+        - contextPath: File.Type
+          description: The file type.
+          type: String
+        - contextPath: File.MD5
+          description: The MD5 hash of the file.
+          type: String
+        - contextPath: File.Extension
+          description: The extension of the file.
+          type: String
     - name: cs-falcon-sandbox-report-state
       description: Get the report state for the given ID
       deprecated: false
@@ -2864,7 +2912,19 @@ script:
           defaultValue: ""
           predefined:
             - ""
-      outputs: []
+      outputs:
+        - contextPath: Crowdstrike.State.state
+          description: ''
+          type: String
+        - contextPath: Crowdstrike.State.error_type
+          description:
+          type: String
+        - contextPath: Crowdstrike.State.error_origin
+          description: ''
+          type: String
+        - contextPath: Crowdstrike.State.error
+          description: ''
+          type: String
   runonce: false
 tests:
   - VxStream Test
