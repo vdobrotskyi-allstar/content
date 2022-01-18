@@ -259,12 +259,12 @@ def create_scan_results_readable_output(scan_response):
                            headerTransform=lambda x: table_field_dict.get(x, x), removeNull=True)
 
 
-def get_dbot_score(filehash, raw_score: int):
+def get_dbot_score(filehash, threat_score: int):
     def calc_score():
         return {3: 0,
                 2: 3,
                 1: 2,
-                0: 1}.get(raw_score, 0)
+                0: 1}.get(threat_score, 0)
 
     return Common.DBotScore(indicator=filehash, integration_name='CrowdStrike Falcon Sandbox V2',
                             indicator_type=DBotScoreType.FILE, score=calc_score(),

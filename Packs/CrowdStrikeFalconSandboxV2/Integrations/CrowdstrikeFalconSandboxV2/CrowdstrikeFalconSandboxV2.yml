@@ -825,6 +825,7 @@ script:
             - "300"
         - name: environmentId
           deprecated: true
+          description: ''
         - name: Polling
           description: Whether the command should poll until the result is ready
           required: false
@@ -1728,6 +1729,7 @@ script:
             - "300"
         - name: environmentId
           deprecated: true
+          description: ''
         - name: JobID
           description: Job ID of file to generate report for
           required: false
@@ -2842,7 +2844,7 @@ script:
       deprecated: false
       arguments:
         - name: file
-          description: The sha256 hash of a file
+          description: The SHA256 hash of a file
           required: true
           isArray: false
           defaultValue: ""
@@ -2857,9 +2859,6 @@ script:
           type: String
         - contextPath: File.SHA512
           description: The SHA512 hash of the file.
-          type: String
-        - contextPath: File.Name
-          description: The name of the file.
           type: String
         - contextPath: File.SSDeep
           description: The SSDeep hash of the file.
@@ -2917,7 +2916,7 @@ script:
           description: ''
           type: String
         - contextPath: Crowdstrike.State.error_type
-          description:
+          description: ''
           type: String
         - contextPath: Crowdstrike.State.error_origin
           description: ''

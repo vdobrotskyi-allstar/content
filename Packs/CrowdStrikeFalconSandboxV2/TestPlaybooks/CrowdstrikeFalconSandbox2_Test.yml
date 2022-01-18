@@ -1,5 +1,5 @@
-id: VxStream Test
-version: 24
+id: CrowdstrikeFalconSandbox2 Test
+version: -1
 vcShouldKeepItemLegacyProdMachine: false
 name: CrowdstrikeFalconSandbox2 Test
 starttaskid: "0"
